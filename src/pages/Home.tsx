@@ -113,6 +113,27 @@ export function Home() {
           </div>
 
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+            {/* Competitive Exams Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0 }}
+            >
+              <Link
+                to="/competitive-exams"
+                className="group flex h-32 flex-col items-center justify-center rounded-3xl border-2 border-brand-200 bg-brand-50 transition-all hover:border-brand-500 hover:shadow-xl hover:shadow-brand-500/10"
+              >
+                <Trophy className="mb-1 text-brand-500 group-hover:scale-110 transition-transform" size={32} />
+                <span className="text-center text-sm font-bold text-slate-900">
+                  Competitive Exams
+                </span>
+                <div className="mt-2 flex h-6 w-6 items-center justify-center rounded-full bg-brand-500 text-white transition-colors">
+                  <ArrowRight size={14} />
+                </div>
+              </Link>
+            </motion.div>
+
             {classes.map((cls, i) => (
               <motion.div
                 key={cls.id}

@@ -12,6 +12,7 @@ import { ClassView } from './pages/ClassView';
 import { SubjectView } from './pages/SubjectView';
 import { ChapterView } from './pages/ChapterView';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { CompetitiveExams } from './pages/CompetitiveExams';
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
           <main className="flex-grow">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/competitive-exams" element={<CompetitiveExams />} />
               <Route path="/class/:classId" element={<ClassView />} />
               <Route path="/class/:classId/subject/:subjectId" element={<SubjectView />} />
               <Route path="/class/:classId/subject/:subjectId/chapter/:chapterId" element={<ChapterView />} />

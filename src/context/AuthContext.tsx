@@ -40,7 +40,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setProfile(snap.data());
           }
         } catch (error) {
-          handleFirestoreError(error, OperationType.GET, `users/${user.uid}`);
+          console.error("Error fetching/creating user profile:", error);
+          // Don't throw here to avoid blocking the app
         }
       } else {
         setProfile(null);
@@ -52,8 +53,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (error: any) {
+      console.error("Login Error:", error);
+      if (error.code === 'auth/popup-blocked') {
+        alert("Please allow popups for this site to sign in.");
+      } else if (error.code === 'auth/unauthorized-domain') {
+        alert("This domain is not authorized for Google Sign-In. Please check Firebase console.");
+      } else {
+        alert("Failed to sign in with Google. Please try again.");
+      }
+    }
   };
 
   const logout = async () => {
