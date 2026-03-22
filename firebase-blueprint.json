@@ -1,0 +1,82 @@
+{
+  "entities": {
+    "Class": {
+      "title": "Class",
+      "description": "Educational grade level (1-12)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["id", "name", "order"]
+    },
+    "Subject": {
+      "title": "Subject",
+      "description": "Academic subject within a class",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "icon": { "type": "string" },
+        "classId": { "type": "string" }
+      },
+      "required": ["id", "name", "icon", "classId"]
+    },
+    "Chapter": {
+      "title": "Chapter",
+      "description": "Educational chapter with documents, video, and quiz",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "documents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "url": { "type": "string" },
+              "type": { "type": "string", "enum": ["pdf", "doc", "ppt"] }
+            }
+          }
+        },
+        "videoUrl": { "type": "string" },
+        "quizHtml": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "classId": { "type": "string" }
+      },
+      "required": ["id", "title", "subjectId", "classId"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile with role and progress",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "student"] },
+        "xp": { "type": "number" }
+      },
+      "required": ["uid", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/classes/{classId}": {
+      "schema": "Class",
+      "description": "Collection of classes"
+    },
+    "/subjects/{subjectId}": {
+      "schema": "Subject",
+      "description": "Collection of subjects"
+    },
+    "/chapters/{chapterId}": {
+      "schema": "Chapter",
+      "description": "Collection of chapters"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of user profiles"
+    }
+  }
+}
