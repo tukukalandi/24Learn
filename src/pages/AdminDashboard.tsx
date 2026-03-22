@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { db, handleFirestoreError, OperationType } from '../firebase';
+import { db, handleFirestoreError, OperationType, storage } from '../firebase';
 import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { Plus, Trash2, Edit, Save, X, Upload, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { getSupabase } from '../supabase';
 
 export function AdminDashboard() {
   const { isAdmin, loading } = useAuth();
@@ -91,31 +91,34 @@ export function AdminDashboard() {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
       const filePath = `chapters/${fileName}`;
+      const storageRef = ref(storage, filePath);
 
-      const supabase = getSupabase();
-      const { data, error } = await supabase.storage
-        .from('educational-materials')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+      const uploadTask = uploadBytesResumable(storageRef, file);
 
-      if (error) throw error;
-
-      const { data: { publicUrl } } = getSupabase().storage
-        .from('educational-materials')
-        .getPublicUrl(filePath);
-
-      setNewDoc({
-        ...newDoc,
-        title: file.name,
-        url: publicUrl,
-        type: fileExt === 'pdf' ? 'pdf' : (fileExt === 'ppt' || fileExt === 'pptx' ? 'ppt' : 'doc')
-      });
+      uploadTask.on('state_changed', 
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress);
+        }, 
+        (error) => {
+          console.error('Error uploading file:', error.message);
+          alert('Upload failed. Please check your Firebase Storage rules.');
+          setUploading(false);
+        }, 
+        async () => {
+          const publicUrl = await getDownloadURL(uploadTask.snapshot.ref);
+          setNewDoc({
+            ...newDoc,
+            title: file.name,
+            url: publicUrl,
+            type: fileExt === 'pdf' ? 'pdf' : (fileExt === 'ppt' || fileExt === 'pptx' ? 'ppt' : 'doc')
+          });
+          setUploading(false);
+        }
+      );
     } catch (error: any) {
       console.error('Error uploading file:', error.message);
-      alert('Upload failed. Please ensure Supabase is configured and the "educational-materials" bucket exists.');
-    } finally {
+      alert('Upload failed. Please ensure Firebase Storage is configured.');
       setUploading(false);
     }
   };
@@ -270,7 +273,7 @@ export function AdminDashboard() {
                   {uploading ? (
                     <div className="flex flex-col items-center gap-2">
                       <Loader2 className="animate-spin text-brand-500" size={32} />
-                      <p className="text-sm font-medium text-slate-600">Uploading to Supabase...</p>
+                      <p className="text-sm font-medium text-slate-600">Uploading to Firebase... {Math.round(uploadProgress)}%</p>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-2">
