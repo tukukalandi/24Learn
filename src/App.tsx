@@ -11,7 +11,6 @@ import { Home } from './pages/Home';
 import { ClassView } from './pages/ClassView';
 import { SubjectView } from './pages/SubjectView';
 import { ChapterView } from './pages/ChapterView';
-import { AdminDashboard } from './pages/AdminDashboard';
 import { CompetitiveExams } from './pages/CompetitiveExams';
 
 export default function App() {
@@ -27,7 +26,6 @@ export default function App() {
               <Route path="/class/:classId" element={<ClassView />} />
               <Route path="/class/:classId/subject/:subjectId" element={<SubjectView />} />
               <Route path="/class/:classId/subject/:subjectId/chapter/:chapterId" element={<ChapterView />} />
-              <Route path="/admin" element={<AdminDashboard />} />
             </Routes>
           </main>
           <Footer />

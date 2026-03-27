@@ -5,6 +5,7 @@ import { getStorage } from 'firebase/storage';
 import firebaseConfig from '../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
+console.log('Initializing Firestore with Database ID:', firebaseConfig.firestoreDatabaseId || '(default)');
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
