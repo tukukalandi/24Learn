@@ -108,10 +108,11 @@ export function SubjectView() {
   const normalizedSubjectId = subjectId?.toLowerCase() || '';
   const normalizedSubjectName = subjectName.toLowerCase();
   const normalizedClassId = classId?.toLowerCase() || '';
+  const normalizedClassName = className.toLowerCase();
   
-  const isMath = normalizedSubjectId.includes('math') || normalizedSubjectName.includes('math');
-  const isEnglish = normalizedSubjectId.includes('english') || normalizedSubjectId.includes('eng') || normalizedSubjectName.includes('english');
-  const isClass4 = normalizedClassId.includes('4');
+  const isMath = normalizedSubjectId.includes('math') || normalizedSubjectName.includes('math') || normalizedSubjectId.includes('mat');
+  const isEnglish = normalizedSubjectId.includes('english') || normalizedSubjectId.includes('eng') || normalizedSubjectName.includes('english') || normalizedSubjectName.includes('eng');
+  const isClass4 = normalizedClassId.includes('4') || normalizedClassName.includes('4') || normalizedClassId.includes('iv') || normalizedClassName.includes('iv') || normalizedClassId.includes('four');
 
   const isMathClass4 = isClass4 && isMath;
   const isEnglishClass4 = isClass4 && isEnglish;
@@ -147,10 +148,10 @@ export function SubjectView() {
           </Link>
 
           <h1 className="text-5xl md:text-6xl font-black text-slate-900 mb-2 tracking-tight">
-            Material Link
+            {className} {subjectName}
           </h1>
           <p className="text-slate-500 text-lg">
-            {subjectName} TextBook Material Link
+            TextBook Material Links
           </p>
         </div>
 
@@ -215,10 +216,10 @@ export function SubjectView() {
             key={selectedMaterial}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden scroll-mt-10"
+            className="bg-white rounded-[1.5rem] shadow-xl border border-slate-200 overflow-hidden scroll-mt-10"
             id="chapters-section"
           >
-            <div className="bg-ncert-maroon text-white px-10 py-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="bg-ncert-maroon text-white px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h2 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
                   <BookOpen className="text-white/80" />
@@ -233,29 +234,25 @@ export function SubjectView() {
               </div>
             </div>
             
-            <div className="p-8 md:p-10 bg-slate-50/50">
+            <div className="p-6 md:p-8 bg-white">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentChapters.map((chapter, index) => (
                   <motion.div 
                     key={chapter}
-                    whileHover={{ scale: 1.02, x: 5 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="group flex items-center gap-5 p-5 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-ncert-maroon transition-all cursor-pointer"
+                    whileHover={{ scale: 1.01, x: 2 }}
+                    whileTap={{ scale: 0.99 }}
+                    className="group flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-ncert-maroon/30 transition-all cursor-pointer"
                   >
-                    <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-ncert-maroon font-black text-xl group-hover:bg-ncert-maroon group-hover:text-white transition-all shrink-0 shadow-inner">
+                    <div className="w-12 h-12 rounded-xl bg-blue-50/80 flex items-center justify-center text-ncert-maroon font-black text-xl shrink-0 border border-blue-100/50">
                       {index + 1}
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold text-slate-700 group-hover:text-slate-900 leading-tight">
+                      <h3 className="text-base md:text-lg font-bold text-slate-700 group-hover:text-slate-900 leading-tight">
                         {chapter}
                       </h3>
-                      <div className="flex items-center gap-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-xs font-bold text-ncert-maroon uppercase tracking-wider">View Details</span>
-                        <ChevronRight size={14} className="text-ncert-maroon" />
-                      </div>
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-ncert-maroon/10 group-hover:text-ncert-maroon transition-all">
-                      <ChevronRight size={18} />
+                    <div className="text-slate-300 group-hover:text-ncert-maroon transition-colors">
+                      <ChevronRight size={20} />
                     </div>
                   </motion.div>
                 ))}
