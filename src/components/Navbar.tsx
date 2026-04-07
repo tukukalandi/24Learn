@@ -269,13 +269,44 @@ export function Navbar() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden bg-white border-t border-slate-100 p-4 space-y-4 shadow-xl">
+          <div className="md:hidden bg-white border-t border-slate-100 p-4 space-y-4 shadow-xl max-h-[80vh] overflow-y-auto">
             <div className="space-y-2">
-              <Link to="/" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700">HOME</Link>
-              <Link to="/rules" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700">RULES</Link>
-              <Link to="/exams/po-guide" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700">GUIDES</Link>
-              <Link to="/about" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700">ABOUT US</Link>
-              <Link to="/contact" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700">CONTACT</Link>
+              <Link to="/" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700 border-b border-slate-50">HOME</Link>
+              <Link to="/rules" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700 border-b border-slate-50">RULES</Link>
+              <Link to="/exams/po-guide" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700 border-b border-slate-50">GUIDES</Link>
+              
+              <div className="py-2">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Others</p>
+                <div className="space-y-1 pl-2 border-l-2 border-postal-red/10">
+                  <a 
+                    href="https://www.indiapost.gov.in/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block py-2 text-sm font-semibold text-slate-600 hover:text-postal-red"
+                  >
+                    India Post Website
+                  </a>
+                  <a 
+                    href="https://dhenkanalpostaldivision.org/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block py-2 text-sm font-semibold text-slate-600 hover:text-postal-red"
+                  >
+                    Dhenkanal Postal Division Website
+                  </a>
+                  <a 
+                    href="https://sites.google.com/view/postal-knowledge/home" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block py-2 text-sm font-semibold text-slate-600 hover:text-postal-red"
+                  >
+                    BD Branch Website
+                  </a>
+                  <Link to="/publications" onClick={() => setIsMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-600 hover:text-postal-red">PUBLICATIONS</Link>
+                  <Link to="/about" onClick={() => setIsMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-600 hover:text-postal-red">ABOUT US</Link>
+                  <Link to="/contact" onClick={() => setIsMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-600 hover:text-postal-red">CONTACT</Link>
+                </div>
+              </div>
             </div>
           </div>
         )}
