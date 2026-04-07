@@ -1,4 +1,4 @@
-import { Globe, Github, Twitter, Instagram, Mail } from 'lucide-react';
+import { Globe, Github, Twitter, Instagram, Mail, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function Footer() {
@@ -18,6 +18,14 @@ export function Footer() {
             <p className="mt-4 max-w-xs text-slate-600 dark:text-slate-400">
               Your personal guide to mastering postal departmental exams. Empowering postal employees through knowledge.
             </p>
+            <div className="mt-6 flex flex-col gap-2">
+              <a href="mailto:dakshiksha@gmail.com" className="flex items-center gap-2 text-sm text-slate-600 hover:text-postal-red transition-colors dark:text-slate-400">
+                <Mail size={16} /> dakshiksha@gmail.com
+              </a>
+              <a href="tel:+918249574543" className="flex items-center gap-2 text-sm text-slate-600 hover:text-postal-red transition-colors dark:text-slate-400">
+                <Phone size={16} /> +91 8249574543
+              </a>
+            </div>
             <div className="mt-6 flex gap-4">
               <a href="#" className="text-slate-400 hover:text-postal-red transition-colors"><Twitter size={20} /></a>
               <a href="#" className="text-slate-400 hover:text-postal-red transition-colors"><Instagram size={20} /></a>
