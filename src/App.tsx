@@ -13,6 +13,8 @@ import { SubjectView } from './pages/SubjectView';
 import { ChapterView } from './pages/ChapterView';
 import { CompetitiveExams } from './pages/CompetitiveExams';
 import { POGuide } from './pages/POGuide';
+import { BDBranch } from './pages/BDBranch';
+import { Rules } from './pages/Rules';
 
 export default function App() {
   return (
@@ -23,8 +25,10 @@ export default function App() {
           <main className="flex-grow">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/rules" element={<Rules />} />
               <Route path="/competitive-exams" element={<CompetitiveExams />} />
               <Route path="/exams/po-guide" element={<POGuide />} />
+              <Route path="/branch/bd" element={<BDBranch />} />
               <Route path="/class/:classId" element={<ClassView />} />
               <Route path="/class/:classId/subject/:subjectId" element={<SubjectView />} />
               <Route path="/class/:classId/subject/:subjectId/chapter/:chapterId" element={<ChapterView />} />

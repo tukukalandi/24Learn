@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect } from 'react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowRight, BookOpen, Video, PenTool, Trophy, ChevronRight, 
   Download, GraduationCap, Bell, Newspaper, Calendar, Info, 
@@ -54,6 +54,7 @@ const BRANCHES = [
 
 export function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -156,6 +157,11 @@ export function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
+                onClick={() => {
+                  if (branch.name === 'BD Branch') {
+                    navigate('/branch/bd');
+                  }
+                }}
                 className="group p-6 bg-slate-50 rounded-sm border border-slate-100 hover:bg-white hover:shadow-xl hover:border-postal-red/20 transition-all cursor-pointer"
               >
                 <div className="w-12 h-12 bg-postal-red/5 rounded-sm flex items-center justify-center text-postal-red mb-4 group-hover:bg-postal-red group-hover:text-white transition-colors">

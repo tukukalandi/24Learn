@@ -146,14 +146,15 @@ export function Navbar() {
                   </div>
                   <div className="py-2">
                     {branches.map((branch) => (
-                      <button
+                      <Link
                         key={branch.name}
+                        to={branch.name === 'BD Branch' ? '/branch/bd' : '#'}
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-sm font-semibold text-slate-700 transition-colors border-b border-slate-50 last:border-0"
                         onClick={() => setIsBranchMenuOpen(false)}
                       >
                         <branch.icon size={18} className="text-postal-red" />
                         {branch.name}
-                      </button>
+                      </Link>
                     ))}
                   </div>
                   <div className="bg-slate-50 p-3 border-t border-slate-200">
