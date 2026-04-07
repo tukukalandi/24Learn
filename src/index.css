@@ -5,13 +5,26 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Outfit", sans-serif;
   
-  --color-ncert-maroon: #801638;
-  --color-ncert-bg: #f4f4f4;
+  --color-postal-red: #d32f2f;
+  --color-postal-yellow: #ffc107;
+  --color-postal-bg: #f8f9fa;
+  
+  /* Keep legacy names for compatibility if needed, but update values */
+  --color-ncert-maroon: #d32f2f;
+  --color-ncert-bg: #f8f9fa;
 }
 
 @layer base {
   body {
-    @apply font-sans bg-ncert-bg text-slate-900 transition-colors duration-300;
+    @apply font-sans bg-postal-bg text-slate-900 transition-colors duration-300;
+    background-image: 
+      radial-gradient(#d32f2f08 1px, transparent 1px),
+      url('https://upload.wikimedia.org/wikipedia/en/thumb/3/32/India_Post.svg/250px-India_Post.svg.png');
+    background-size: 20px 20px, 400px auto;
+    background-repeat: repeat, no-repeat;
+    background-position: center, center;
+    background-attachment: fixed;
+    background-blend-mode: normal, overlay;
   }
 }
 

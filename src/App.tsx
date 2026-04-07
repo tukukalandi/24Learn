@@ -12,6 +12,7 @@ import { ClassView } from './pages/ClassView';
 import { SubjectView } from './pages/SubjectView';
 import { ChapterView } from './pages/ChapterView';
 import { CompetitiveExams } from './pages/CompetitiveExams';
+import { POGuide } from './pages/POGuide';
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/competitive-exams" element={<CompetitiveExams />} />
+              <Route path="/exams/po-guide" element={<POGuide />} />
               <Route path="/class/:classId" element={<ClassView />} />
               <Route path="/class/:classId/subject/:subjectId" element={<SubjectView />} />
               <Route path="/class/:classId/subject/:subjectId/chapter/:chapterId" element={<ChapterView />} />

@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, GraduationCap, Trophy, Menu, X, User, LogOut, Settings, ChevronRight, Globe, Type, Eye } from 'lucide-react';
+import { 
+  Search, Menu, X, ChevronRight, Globe, Type, Eye, 
+  Mail, Briefcase, Stamp, Package, Users, MoreHorizontal,
+  UserCircle, FileText, Download, Calendar
+} from 'lucide-react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { cn } from '../lib/utils';
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isBranchMenuOpen, setIsBranchMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [classes, setClasses] = useState<any[]>([]);
   const navigate = useNavigate();
@@ -37,6 +42,22 @@ export function Navbar() {
     { name: 'IP Exam', search: ['inspector'] },
   ];
 
+  const branches = [
+    { name: 'Mail Branch', icon: Mail },
+    { name: 'BD Branch', icon: Briefcase },
+    { name: 'Philately Branch', icon: Stamp },
+    { name: 'Parcel Branch', icon: Package },
+    { name: 'CCS Branch', icon: Users },
+    { name: 'Other Branch', icon: MoreHorizontal },
+  ];
+
+  const extraMenuOptions = [
+    { name: 'Staff Corner', icon: UserCircle, link: '/staff-corner' },
+    { name: 'Latest Circulars', icon: FileText, link: '/circulars' },
+    { name: 'Download Forms', icon: Download, link: '/forms' },
+    { name: 'Holiday Calendar', icon: Calendar, link: '/holidays' },
+  ];
+
   const getClassesForSubject = (searchTerms: string[]) => {
     const relevantSubjects = subjectsList.filter(s => 
       searchTerms.some(term => s.name.toLowerCase().includes(term))
@@ -62,43 +83,110 @@ export function Navbar() {
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => setActiveDropdown(null);
+    const handleClickOutside = (e: MouseEvent) => {
+      setActiveDropdown(null);
+      // Close branch menu if clicking outside
+      const target = e.target as HTMLElement;
+      if (!target.closest('.branch-menu-container')) {
+        setIsBranchMenuOpen(false);
+      }
+    };
     window.addEventListener('click', handleClickOutside);
     return () => window.removeEventListener('click', handleClickOutside);
   }, []);
 
   return (
     <header className="w-full">
-      {/* Top Accessibility Bar */}
-      <div className="bg-slate-100 border-b border-slate-200 py-1 text-[11px] font-medium text-slate-600">
+      {/* Top Accessibility Bar (Language Bar) */}
+      <div className="bg-green-700 border-b border-green-800 py-1 text-[11px] font-medium text-white">
         <div className="mx-auto max-w-7xl flex items-center justify-end gap-4 px-4 sm:px-6 lg:px-8">
-          <button className="hover:text-ncert-maroon flex items-center gap-1">
+          <button className="hover:text-postal-yellow flex items-center gap-1">
             <Globe size={12} /> Language
           </button>
-          <button className="hover:text-ncert-maroon flex items-center gap-1">
+          <button className="hover:text-postal-yellow flex items-center gap-1">
             <Type size={12} /> Text Size
           </button>
-          <button className="hover:text-ncert-maroon flex items-center gap-1">
+          <button className="hover:text-postal-yellow flex items-center gap-1">
             <Eye size={12} /> Contrast
           </button>
-          <div className="h-3 w-[1px] bg-slate-300 mx-1" />
+          <div className="h-3 w-[1px] bg-white/30 mx-1" />
           <span>{new Date().toLocaleDateString()}</span>
         </div>
       </div>
 
-      {/* Main Maroon Header */}
-      <div className="bg-ncert-maroon text-white py-4 shadow-md">
+      {/* Main Branding Header (White) */}
+      <div className="bg-white text-slate-900 py-4 shadow-sm relative border-b border-slate-100">
         <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
-          <Link to="/" className="flex items-center gap-4 group">
-            <div className="bg-white p-2 rounded-full shadow-inner group-hover:scale-105 transition-transform">
-              <Globe className="text-ncert-maroon" size={48} />
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/250px-Emblem_of_India.svg.png" 
+              alt="Indian National Emblem" 
+              className="h-12"
+              referrerPolicy="no-referrer"
+            />
+            {/* Branch Menu Button */}
+            <div className="branch-menu-container relative">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsBranchMenuOpen(!isBranchMenuOpen);
+                }}
+                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-postal-red"
+                aria-label="Toggle Branch Menu"
+              >
+                {isBranchMenuOpen ? <X size={28} /> : <Menu size={28} />}
+              </button>
+
+              {/* Branch Side Menu */}
+              {isBranchMenuOpen && (
+                <div className="absolute left-0 top-full mt-4 w-64 bg-white text-slate-900 shadow-2xl rounded-sm border border-slate-200 z-[100] overflow-hidden animate-in slide-in-from-left duration-200">
+                  <div className="bg-postal-red p-4 text-white">
+                    <h3 className="font-bold text-lg">My Branches</h3>
+                    <p className="text-[10px] opacity-70 uppercase tracking-widest">Select a branch to explore</p>
+                  </div>
+                  <div className="py-2">
+                    {branches.map((branch) => (
+                      <button
+                        key={branch.name}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-sm font-semibold text-slate-700 transition-colors border-b border-slate-50 last:border-0"
+                        onClick={() => setIsBranchMenuOpen(false)}
+                      >
+                        <branch.icon size={18} className="text-postal-red" />
+                        {branch.name}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="bg-slate-50 p-3 border-t border-slate-200">
+                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Quick Access</h4>
+                    <div className="space-y-1">
+                      {extraMenuOptions.map((option) => (
+                        <Link
+                          key={option.name}
+                          to={option.link}
+                          className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium text-slate-600 hover:text-postal-red transition-colors"
+                          onClick={() => setIsBranchMenuOpen(false)}
+                        >
+                          <option.icon size={14} />
+                          {option.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="text-center md:text-left">
-              <h1 className="text-xl md:text-2xl font-bold leading-tight tracking-wide">डाकशिक्षा</h1>
-              <h2 className="text-lg md:text-xl font-semibold leading-tight opacity-90">DakShiksha</h2>
-              <p className="text-[10px] uppercase tracking-[0.2em] opacity-70 mt-1">Postal Educational Knowledge Portal</p>
-            </div>
-          </Link>
+
+            <Link to="/" className="flex items-center gap-4 group">
+              <div className="bg-postal-red/5 p-2 rounded-full shadow-inner group-hover:scale-105 transition-transform">
+                <Globe className="text-postal-red" size={48} />
+              </div>
+              <div className="text-center md:text-left">
+                <h1 className="text-xl md:text-2xl font-bold leading-tight tracking-wide text-postal-red">डाकशिक्षा</h1>
+                <h2 className="text-lg md:text-xl font-semibold leading-tight text-slate-800">DakShiksha</h2>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 mt-1">Postal Educational Knowledge Portal</p>
+              </div>
+            </Link>
+          </div>
 
           <div className="flex items-center gap-4 w-full md:w-auto">
             <form onSubmit={handleSearch} className="relative flex-1 md:w-80">
@@ -107,43 +195,41 @@ export function Navbar() {
                 placeholder="Search resources..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-10 w-full rounded-sm border-none bg-white/10 px-4 pr-10 text-sm text-white placeholder:text-white/50 focus:bg-white focus:text-slate-900 focus:outline-none transition-all"
+                className="h-10 w-full rounded-sm border border-slate-200 bg-slate-50 px-4 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-postal-red focus:outline-none transition-all"
               />
-              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-white/70 hover:text-white">
+              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-postal-red">
                 <Search size={18} />
               </button>
             </form>
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/en/thumb/3/32/India_Post.svg/250px-India_Post.svg.png" 
+              alt="India Post Logo" 
+              className="h-12"
+              referrerPolicy="no-referrer"
+            />
           </div>
         </div>
       </div>
 
-      {/* Sub-Navigation Bar */}
-      <nav className="bg-[#1a1a1a] border-b border-white/10 sticky top-0 z-40 shadow-sm">
+      {/* Navigation Bar (India Post Red) */}
+      <nav className="bg-postal-red sticky top-0 z-40 shadow-md">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14">
-            <div className="hidden md:flex items-center gap-8 text-[13px] font-bold text-white">
-              <Link to="/" className="hover:text-slate-300 transition-colors">HOME</Link>
+          <div className="flex items-center justify-between h-12">
+            <div className="hidden md:flex items-center gap-10 text-[13px] font-bold text-white">
+              <Link to="/" className="hover:text-postal-yellow transition-colors tracking-widest">HOME</Link>
+              <Link to="/rules" className="hover:text-postal-yellow transition-colors tracking-widest">RULES</Link>
+              <Link to="/exams/po-guide" className="hover:text-postal-yellow transition-colors tracking-widest">GUIDES</Link>
               
-              {examCategories.map((cat) => (
-                <Link 
-                  key={cat.name} 
-                  to={`/exams/${cat.search[0]}`}
-                  className="hover:text-slate-300 transition-colors uppercase tracking-wide"
-                >
-                  {cat.name}
-                </Link>
-              ))}
-
-              <div className="relative group h-14 flex items-center">
-                <button className="hover:text-slate-300 transition-colors flex items-center gap-1 uppercase tracking-wide">
-                  MORE <ChevronRight size={14} className="rotate-90 opacity-50" />
+              <div className="relative group h-12 flex items-center">
+                <button className="hover:text-postal-yellow transition-colors flex items-center gap-1 tracking-widest uppercase">
+                  OTHERS <ChevronRight size={14} className="rotate-90 opacity-50" />
                 </button>
-                <div className="absolute left-0 top-full hidden group-hover:block w-72 bg-[#1a1a1a] shadow-2xl border border-white/5 py-2 z-50">
+                <div className="absolute left-0 top-full hidden group-hover:block w-72 bg-white shadow-2xl border border-slate-200 py-2 z-50">
                   <a 
                     href="https://www.indiapost.gov.in/" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="block px-6 py-2.5 hover:bg-white/5 text-slate-300 hover:text-white text-sm font-bold transition-colors uppercase"
+                    className="block px-6 py-2.5 hover:bg-slate-50 text-slate-700 hover:text-postal-red text-sm font-bold transition-colors uppercase"
                   >
                     India Post Website
                   </a>
@@ -151,7 +237,7 @@ export function Navbar() {
                     href="https://dhenkanalpostaldivision.org/" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="block px-6 py-2.5 hover:bg-white/5 text-slate-300 hover:text-white text-sm font-bold transition-colors uppercase"
+                    className="block px-6 py-2.5 hover:bg-slate-50 text-slate-700 hover:text-postal-red text-sm font-bold transition-colors uppercase"
                   >
                     Dhenkanal Postal Division Website
                   </a>
@@ -159,21 +245,21 @@ export function Navbar() {
                     href="https://sites.google.com/view/postal-knowledge/home" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="block px-6 py-2.5 hover:bg-white/5 text-slate-300 hover:text-white text-sm font-bold transition-colors uppercase"
+                    className="block px-6 py-2.5 hover:bg-slate-50 text-slate-700 hover:text-postal-red text-sm font-bold transition-colors uppercase"
                   >
                     BD Branch Website
                   </a>
-                  <div className="h-[1px] bg-white/5 my-1" />
-                  <Link to="/about" className="block px-6 py-2.5 hover:bg-white/5 text-slate-300 hover:text-white text-sm font-bold transition-colors">ABOUT US</Link>
-                  <Link to="/publications" className="block px-6 py-2.5 hover:bg-white/5 text-slate-300 hover:text-white text-sm font-bold transition-colors">PUBLICATIONS</Link>
-                  <Link to="/contact" className="block px-6 py-2.5 hover:bg-white/5 text-slate-300 hover:text-white text-sm font-bold transition-colors">CONTACT</Link>
+                  <div className="h-[1px] bg-slate-100 my-1" />
+                  <Link to="/about" className="block px-6 py-2.5 hover:bg-slate-50 text-slate-700 hover:text-postal-red text-sm font-bold transition-colors">ABOUT US</Link>
+                  <Link to="/publications" className="block px-6 py-2.5 hover:bg-slate-50 text-slate-700 hover:text-postal-red text-sm font-bold transition-colors">PUBLICATIONS</Link>
+                  <Link to="/contact" className="block px-6 py-2.5 hover:bg-slate-50 text-slate-700 hover:text-postal-red text-sm font-bold transition-colors">CONTACT</Link>
                 </div>
               </div>
             </div>
 
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 text-white hover:text-slate-300"
+              className="md:hidden p-2 text-white hover:text-postal-yellow"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -185,21 +271,8 @@ export function Navbar() {
           <div className="md:hidden bg-white border-t border-slate-100 p-4 space-y-4 shadow-xl">
             <div className="space-y-2">
               <Link to="/" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700">HOME</Link>
-              <div className="py-2">
-                <p className="text-xs font-bold text-slate-400 uppercase mb-2">Exams</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {examCategories.map(cat => (
-                    <Link
-                      key={cat.name}
-                      to={`/exams/${cat.search[0]}`}
-                      onClick={() => setIsMenuOpen(false)}
-                      className="block p-2 text-sm bg-slate-50 rounded hover:bg-ncert-maroon/5"
-                    >
-                      {cat.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
+              <Link to="/rules" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700">RULES</Link>
+              <Link to="/exams/po-guide" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700">GUIDES</Link>
               <Link to="/about" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700">ABOUT US</Link>
               <Link to="/contact" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700">CONTACT</Link>
             </div>
