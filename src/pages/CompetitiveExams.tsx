@@ -16,11 +16,11 @@ export function CompetitiveExams() {
               <Trophy size={24} />
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-ncert-maroon italic tracking-tight">
-              Competitive Exams Preparation
+              Postal Departmental Exams
             </h1>
           </div>
           <p className="mt-2 text-slate-600 font-medium">
-            Prepare for JEE, NEET, UPSC, and other competitive exams with our curated study materials and practice tests.
+            Prepare for GDS to MTS, Postman, PA/SA, and other departmental exams with our specialized study materials.
           </p>
         </div>
       </div>
@@ -29,18 +29,18 @@ export function CompetitiveExams() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           {[
             { 
-              title: 'JEE Main & Advanced', 
-              desc: 'Comprehensive notes, previous year papers, and mock tests for engineering aspirants.',
+              title: 'GDS to MTS', 
+              desc: 'Complete syllabus coverage for MTS recruitment exam including PO Guide Part I and General Knowledge.',
               icon: Target
             },
             { 
-              title: 'NEET UG', 
-              desc: 'Detailed biology, physics, and chemistry materials for medical entrance exams.',
+              title: 'GDS to Postman', 
+              desc: 'Detailed resources for Postman/Mail Guard exams covering Postal Manual Vol V and local geography.',
               icon: GraduationCap
             },
             { 
-              title: 'UPSC / State PSC', 
-              desc: 'Current affairs, history, general studies, and optional subjects for civil services.',
+              title: 'PA/SA Exam', 
+              desc: 'Advanced study material for Postal Assistant and Sorting Assistant recruitment.',
               icon: BookOpen
             },
           ].map((exam, i) => (
@@ -68,23 +68,23 @@ export function CompetitiveExams() {
 
         {/* Informational Section */}
         <div className="mt-16 bg-white border border-slate-200 rounded-sm p-8 md:p-12 shadow-sm">
-          <h2 className="text-2xl font-bold text-ncert-maroon italic mb-6">Why Choose 24Learn for Competitive Exams?</h2>
+          <h2 className="text-2xl font-bold text-ncert-maroon italic mb-6">Why Choose DakShiksha for Postal Exams?</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
-              <h4 className="font-bold text-slate-800">Expert Curated Content</h4>
-              <p className="text-sm text-slate-500">Our study materials are developed by subject matter experts with years of experience in competitive exam coaching.</p>
+              <h4 className="font-bold text-slate-800">Specialized Postal Content</h4>
+              <p className="text-sm text-slate-500">Our study materials are focused strictly on the Department of Posts syllabus, including PO Guide Part I & II and Postal Manuals.</p>
             </div>
             <div className="space-y-4">
-              <h4 className="font-bold text-slate-800">Comprehensive Question Bank</h4>
-              <p className="text-sm text-slate-500">Access thousands of practice questions categorized by difficulty level and topic to strengthen your weak areas.</p>
+              <h4 className="font-bold text-slate-800">Targeted Question Bank</h4>
+              <p className="text-sm text-slate-500">Access thousands of practice questions based on previous years' departmental exam patterns.</p>
             </div>
             <div className="space-y-4">
-              <h4 className="font-bold text-slate-800">Real-time Performance Analytics</h4>
-              <p className="text-sm text-slate-500">Track your progress with detailed reports and identify topics that need more focus before the actual exam.</p>
+              <h4 className="font-bold text-slate-800">Performance Tracking</h4>
+              <p className="text-sm text-slate-500">Evaluate your preparation level with our mock tests designed specifically for GDS and departmental promotions.</p>
             </div>
             <div className="space-y-4">
-              <h4 className="font-bold text-slate-800">Interactive Doubt Solving</h4>
-              <p className="text-sm text-slate-500">Get your queries resolved by our community of educators and fellow aspirants through our dedicated doubt portal.</p>
+              <h4 className="font-bold text-slate-800">Expert Guidance</h4>
+              <p className="text-sm text-slate-500">Get insights and tips from experienced postal employees who have successfully cleared these exams.</p>
             </div>
           </div>
         </div>

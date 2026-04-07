@@ -45,86 +45,36 @@ export function SubjectView() {
     };
     fetchNames();
 
-    const unsub = onSnapshot(query(collection(db, 'chapters'), where('subjectId', '==', subjectId)), (snap) => {
+    const unsub = onSnapshot(query(
+      collection(db, 'chapters'), 
+      where('subjectId', '==', subjectId),
+      where('classId', '==', classId)
+    ), (snap) => {
       setChapters(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     }, (error) => handleFirestoreError(error, OperationType.LIST, 'chapters'));
     return () => unsub();
   }, [subjectId, classId]);
 
-  const materials = [
-    { 
-      name: "NCERT NEW BOOK", 
-      icon: BookOpen,
-      color: "bg-rose-500",
-      link: (classId?.includes('4') && (subjectId?.toLowerCase().includes("math") || subjectName.toLowerCase().includes("math"))) 
-        ? "https://ncert.nic.in/textbook.php?demm1=0-14" 
-        : undefined
-    },
-    { name: "BOOK SOLUTION", icon: FileText, color: "bg-amber-500" },
-    { name: "CHAPTER WISE PPT", icon: PlayCircle, color: "bg-emerald-500" },
-    { name: "WORKSHEET", icon: FileText, color: "bg-sky-500" },
-    { name: "ONLINE QUIZ", icon: CheckCircle2, color: "bg-indigo-500" },
-    { name: "CYCLE TEST", icon: CheckCircle2, color: "bg-fuchsia-500" },
-    { name: "VIDEO LESSON", icon: PlayCircle, color: "bg-orange-500" },
-    { name: "AUDIO LESSON", icon: PlayCircle, color: "bg-teal-500" },
-    { name: "ACTIVITY", icon: PlayCircle, color: "bg-blue-500" },
-    { name: "LESSON PLAN", icon: FileText, color: "bg-purple-500" },
-    { name: "LESSON PLAN BASED ON KVS HQ NEW FORMAT", icon: FileText, color: "bg-pink-500" },
-    { name: "SPLIT-UP SYLLABUS", icon: FileText, color: "bg-cyan-500" },
+  const materialsList: { name: string; icon: any; color: string; link?: string }[] = [
+    { name: "PREVIOUS YEAR PAPERS", icon: FileText, color: "bg-rose-500" },
+    { name: "MOCK TESTS", icon: CheckCircle2, color: "bg-amber-500" },
+    { name: "TOPIC NOTES", icon: BookOpen, color: "bg-emerald-500" },
+    { name: "VIDEO LECTURES", icon: PlayCircle, color: "bg-sky-500" },
+    { name: "PDF DOWNLOADS", icon: FileText, color: "bg-indigo-500" },
+    { name: "DAILY QUIZ", icon: CheckCircle2, color: "bg-fuchsia-500" },
+    { name: "POSTAL MANUALS", icon: BookOpen, color: "bg-orange-500" },
+    { name: "PO GUIDE NOTES", icon: FileText, color: "bg-teal-500" },
+    { name: "EXAM SYLLABUS", icon: FileText, color: "bg-blue-500" },
   ];
 
-  const mathClass4Chapters = [
-    "Chapter 1 Shapes Around Us Class 4",
-    "Chapter 2 Hide and Seek Class 4",
-    "Chapter 3 Pattern Around Us Class 4",
-    "Chapter 4 Thousands Around Us Class 4",
-    "Chapter 5 Sharing and Measuring Class 4",
-    "Chapter 6 Measuring Length Class 4",
-    "Chapter 7 The Cleanest Village Class 4",
-    "Chapter 8 Weigh it, Pour it Class 4",
-    "Chapter 9 Equal Groups Class 4",
-    "Chapter 10 Elephants, Tigers, and Leopards Class 4",
-    "Chapter 11 Fun with Symmetry Class 4",
-    "Chapter 12 Ticking Clocks and Turning Calendar Class 4",
-    "Chapter 13 The Transport Museum Class 4",
-    "Chapter 14 Data Handling Class 4"
-  ];
-
-  const englishClass4Chapters = [
-    "Chapter 1 Together We Can Class 4",
-    "Chapter 2 The Tinkling Bells Class 4",
-    "Chapter 3 Be Smart, Be Safe Class 4",
-    "Chapter 4 One Thing at a Time Class 4",
-    "Chapter 5 The Old Stag Class 4",
-    "Chapter 6 Braille Class 4",
-    "Chapter 7 Fit Body, Fit Mind, Fit Nation Class 4",
-    "Chapter 8 The Lagori Champions Class 4",
-    "Chapter 9 Hekko Class 4",
-    "Chapter 10 The Swing Class 4",
-    "Chapter 11 A Journey to the Magical Mountains Class 4",
-    "Chapter 12 Maheshwar Class 4"
-  ];
-
-  const normalizedSubjectId = subjectId?.toLowerCase() || '';
-  const normalizedSubjectName = subjectName.toLowerCase();
-  const normalizedClassId = classId?.toLowerCase() || '';
-  const normalizedClassName = className.toLowerCase();
-  
-  const isMath = normalizedSubjectId.includes('math') || normalizedSubjectName.includes('math') || normalizedSubjectId.includes('mat');
-  const isEnglish = normalizedSubjectId.includes('english') || normalizedSubjectId.includes('eng') || normalizedSubjectName.includes('english') || normalizedSubjectName.includes('eng');
-  const isClass4 = normalizedClassId.includes('4') || normalizedClassName.includes('4') || normalizedClassId.includes('iv') || normalizedClassName.includes('iv') || normalizedClassId.includes('four');
-
-  const isMathClass4 = isClass4 && isMath;
-  const isEnglishClass4 = isClass4 && isEnglish;
-  
-  const showChapters = isMathClass4 || isEnglishClass4;
-  const currentChapters = isMathClass4 ? mathClass4Chapters : (isEnglishClass4 ? englishClass4Chapters : []);
+  const showChapters = chapters.length > 0;
+  const currentChapters = chapters;
 
   const [selectedMaterial, setSelectedMaterial] = useState<string | null>(null);
 
   useEffect(() => {
     if (showChapters && !selectedMaterial) {
-      setSelectedMaterial("NCERT NEW BOOK");
+      setSelectedMaterial("PREVIOUS YEAR PAPERS");
     }
   }, [showChapters, selectedMaterial]);
 
@@ -144,19 +94,19 @@ export function SubjectView() {
       <div className="mx-auto max-w-5xl px-4 py-12">
         <div className="text-center mb-12">
           <Link to={`/class/${classId}`} className="inline-flex items-center gap-2 text-ncert-maroon font-bold text-sm mb-8 hover:underline">
-            <ArrowLeft size={16} /> Back to Subjects
+            <ArrowLeft size={16} /> Back to Topics
           </Link>
 
           <h1 className="text-5xl md:text-6xl font-black text-slate-900 mb-2 tracking-tight">
             {className} {subjectName}
           </h1>
           <p className="text-slate-500 text-lg">
-            TextBook Material Links
+            Study Material & Resource Links
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          {materials.map((item, i) => {
+          {materialsList.map((item, i) => {
             const isSelected = selectedMaterial === item.name;
             const commonClasses = cn(
               "group relative flex flex-col items-center justify-center p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 text-white font-bold text-center h-48 cursor-pointer overflow-hidden",
@@ -238,7 +188,7 @@ export function SubjectView() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentChapters.map((chapter, index) => (
                   <motion.div 
-                    key={chapter}
+                    key={chapter.id || index}
                     whileHover={{ scale: 1.01, x: 2 }}
                     whileTap={{ scale: 0.99 }}
                     className="group flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-ncert-maroon/30 transition-all cursor-pointer"
@@ -248,7 +198,7 @@ export function SubjectView() {
                     </div>
                     <div className="flex-1">
                       <h3 className="text-base md:text-lg font-bold text-slate-700 group-hover:text-slate-900 leading-tight">
-                        {chapter}
+                        {chapter.title || chapter.name || chapter}
                       </h3>
                     </div>
                     <div className="text-slate-300 group-hover:text-ncert-maroon transition-colors">

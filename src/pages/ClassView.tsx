@@ -41,10 +41,10 @@ export function ClassView() {
             <ArrowLeft size={16} /> Back to Portal
           </Link>
           <h1 className="text-3xl md:text-4xl font-bold text-ncert-maroon italic tracking-tight">
-            {className || `Class ${classId}`} - Textbooks PDF
+            {className || `Exam Category ${classId}`} - Study Material
           </h1>
           <p className="mt-2 text-slate-600 font-medium">
-            Select a subject to access digital textbooks and learning materials.
+            Select a topic or paper to access digital study materials and resources.
           </p>
         </div>
       </div>
@@ -74,7 +74,7 @@ export function ClassView() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <h3 className="text-lg font-bold text-ncert-maroon leading-tight group-hover:underline">{subject.name}</h3>
-                      <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest font-bold">Textbook</p>
+                      <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest font-bold">Study Material</p>
                     </div>
                     <div className="bg-ncert-maroon/10 p-1 rounded-sm text-ncert-maroon">
                       <BookOpen size={16} />
@@ -91,7 +91,7 @@ export function ClassView() {
         ) : (
           <div className="text-center py-20 bg-white shadow-sm border border-slate-100 rounded-sm">
             <GraduationCap size={48} className="mx-auto text-slate-200 mb-4" />
-            <h3 className="text-xl font-bold text-slate-400 italic">No subjects available for this class yet.</h3>
+            <h3 className="text-xl font-bold text-slate-400 italic">No materials available for this category yet.</h3>
           </div>
         )}
       </div>

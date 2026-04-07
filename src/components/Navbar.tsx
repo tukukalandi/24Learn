@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, GraduationCap, Trophy, Menu, X, User, LogOut, Settings, ChevronRight, Globe, Type, Eye } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { cn } from '../lib/utils';
 
 export function Navbar() {
-  const { user, profile, isAdmin, login, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [classes, setClasses] = useState<any[]>([]);
@@ -31,12 +29,12 @@ export function Navbar() {
     };
   }, []);
 
-  const mainSubjects = [
-    { name: 'हिन्दी', search: ['hindi', 'हिन्दी'] },
-    { name: 'ENGLISH', search: ['english'] },
-    { name: 'MATH\'S', search: ['math', 'mathematics', 'गणित'] },
-    { name: 'TWAU', search: ['twau'] },
-    { name: 'SCIENCE', search: ['science', 'विज्ञान'] },
+  const examCategories = [
+    { name: 'GDS to MTS', search: ['mts'] },
+    { name: 'GDS to Postman', search: ['postman'] },
+    { name: 'PA/SA Exam', search: ['pa', 'sa'] },
+    { name: 'LGO Exam', search: ['lgo'] },
+    { name: 'IP Exam', search: ['inspector'] },
   ];
 
   const getClassesForSubject = (searchTerms: string[]) => {
@@ -93,12 +91,12 @@ export function Navbar() {
         <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
           <Link to="/" className="flex items-center gap-4 group">
             <div className="bg-white p-2 rounded-full shadow-inner group-hover:scale-105 transition-transform">
-              <GraduationCap className="text-ncert-maroon" size={48} />
+              <Globe className="text-ncert-maroon" size={48} />
             </div>
             <div className="text-center md:text-left">
-              <h1 className="text-xl md:text-2xl font-bold leading-tight tracking-wide">२४लर्न</h1>
-              <h2 className="text-lg md:text-xl font-semibold leading-tight opacity-90">24Learn</h2>
-              <p className="text-[10px] uppercase tracking-[0.2em] opacity-70 mt-1">Educational Research and Training Portal</p>
+              <h1 className="text-xl md:text-2xl font-bold leading-tight tracking-wide">डाकशिक्षा</h1>
+              <h2 className="text-lg md:text-xl font-semibold leading-tight opacity-90">DakShiksha</h2>
+              <p className="text-[10px] uppercase tracking-[0.2em] opacity-70 mt-1">Postal Educational Knowledge Portal</p>
             </div>
           </Link>
 
@@ -115,30 +113,6 @@ export function Navbar() {
                 <Search size={18} />
               </button>
             </form>
-
-            <div className="flex items-center gap-2">
-              {user ? (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={logout}
-                    className="p-2 rounded-full hover:bg-white/10 transition-colors"
-                    title="Logout"
-                  >
-                    <LogOut size={20} />
-                  </button>
-                  <div className="h-10 w-10 flex items-center justify-center rounded-full bg-white text-ncert-maroon font-bold">
-                    {profile?.displayName?.[0] || user.email?.[0].toUpperCase()}
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={login}
-                  className="bg-white text-ncert-maroon px-6 py-2 rounded-sm text-sm font-bold hover:bg-slate-100 transition-colors"
-                >
-                  Sign In
-                </button>
-              )}
-            </div>
           </div>
         </div>
       </div>
@@ -150,67 +124,46 @@ export function Navbar() {
             <div className="hidden md:flex items-center gap-8 text-[13px] font-bold text-white">
               <Link to="/" className="hover:text-slate-300 transition-colors">HOME</Link>
               
-              {mainSubjects.map((sub) => (
-                <div 
-                  key={sub.name} 
-                  className="relative h-14 flex items-center"
-                  onClick={(e) => e.stopPropagation()}
+              {examCategories.map((cat) => (
+                <Link 
+                  key={cat.name} 
+                  to={`/exams/${cat.search[0]}`}
+                  className="hover:text-slate-300 transition-colors uppercase tracking-wide"
                 >
-                  <button 
-                    onClick={() => setActiveDropdown(activeDropdown === sub.name ? null : sub.name)}
-                    className={cn(
-                      "hover:text-slate-300 transition-colors flex items-center gap-1 uppercase tracking-wide",
-                      activeDropdown === sub.name && "text-white"
-                    )}
-                  >
-                    {sub.name} <ChevronRight size={14} className={cn("transition-transform duration-200", activeDropdown === sub.name ? "-rotate-90" : "rotate-90 opacity-50")} />
-                  </button>
-                  
-                  {activeDropdown === sub.name && (
-                    <div className="absolute left-0 top-full w-44 bg-[#1a1a1a] shadow-2xl border border-white/5 py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200">
-                      {/* Classes 1-12 */}
-                      {[...Array(12)].map((_, i) => {
-                        const className = `Class ${i + 1}`;
-                        const cls = classes.find(c => c.name === className);
-                        const subjectId = cls ? getSubjectIdForClass(cls.id, sub.search) : null;
-                        
-                        // Use the real ID if it exists, otherwise use a formatted slug as a fallback
-                        const fallbackClassId = className.toLowerCase().replace(' ', '-');
-                        const targetClassId = cls ? cls.id : fallbackClassId;
-                        
-                        // Use the real subject ID if it exists, otherwise use the search term as a fallback
-                        const targetSubjectId = (cls && subjectId) ? subjectId : sub.search[0].toLowerCase();
-                        
-                        return (
-                          <Link
-                            key={className}
-                            to={`/class/${targetClassId}/subject/${targetSubjectId}`}
-                            className="block px-6 py-2.5 text-sm font-bold text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
-                            onClick={() => setActiveDropdown(null)}
-                          >
-                            {className}
-                          </Link>
-                        );
-                      })}
-                      
-                      <div className="h-[1px] bg-white/5 my-1" />
-                      <Link
-                        to="/competitive-exams"
-                        className="block px-6 py-2.5 hover:bg-white/5 text-ncert-maroon hover:text-red-400 text-sm font-bold transition-colors"
-                        onClick={() => setActiveDropdown(null)}
-                      >
-                        Competitive Exams
-                      </Link>
-                    </div>
-                  )}
-                </div>
+                  {cat.name}
+                </Link>
               ))}
 
               <div className="relative group h-14 flex items-center">
                 <button className="hover:text-slate-300 transition-colors flex items-center gap-1 uppercase tracking-wide">
                   MORE <ChevronRight size={14} className="rotate-90 opacity-50" />
                 </button>
-                <div className="absolute left-0 top-full hidden group-hover:block w-48 bg-[#1a1a1a] shadow-2xl border border-white/5 py-2 z-50">
+                <div className="absolute left-0 top-full hidden group-hover:block w-72 bg-[#1a1a1a] shadow-2xl border border-white/5 py-2 z-50">
+                  <a 
+                    href="https://www.indiapost.gov.in/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block px-6 py-2.5 hover:bg-white/5 text-slate-300 hover:text-white text-sm font-bold transition-colors uppercase"
+                  >
+                    India Post Website
+                  </a>
+                  <a 
+                    href="https://dhenkanalpostaldivision.org/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block px-6 py-2.5 hover:bg-white/5 text-slate-300 hover:text-white text-sm font-bold transition-colors uppercase"
+                  >
+                    Dhenkanal Postal Division Website
+                  </a>
+                  <a 
+                    href="https://sites.google.com/view/postal-knowledge/home" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block px-6 py-2.5 hover:bg-white/5 text-slate-300 hover:text-white text-sm font-bold transition-colors uppercase"
+                  >
+                    BD Branch Website
+                  </a>
+                  <div className="h-[1px] bg-white/5 my-1" />
                   <Link to="/about" className="block px-6 py-2.5 hover:bg-white/5 text-slate-300 hover:text-white text-sm font-bold transition-colors">ABOUT US</Link>
                   <Link to="/publications" className="block px-6 py-2.5 hover:bg-white/5 text-slate-300 hover:text-white text-sm font-bold transition-colors">PUBLICATIONS</Link>
                   <Link to="/contact" className="block px-6 py-2.5 hover:bg-white/5 text-slate-300 hover:text-white text-sm font-bold transition-colors">CONTACT</Link>
@@ -224,13 +177,6 @@ export function Navbar() {
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
-
-            {user && (
-              <div className="flex items-center gap-2 text-xs font-bold text-white bg-white/10 px-3 py-1 rounded-full border border-white/10">
-                <Trophy size={14} />
-                <span>{profile?.xp || 0} XP</span>
-              </div>
-            )}
           </div>
         </div>
 
@@ -240,16 +186,16 @@ export function Navbar() {
             <div className="space-y-2">
               <Link to="/" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700">HOME</Link>
               <div className="py-2">
-                <p className="text-xs font-bold text-slate-400 uppercase mb-2">Classes</p>
+                <p className="text-xs font-bold text-slate-400 uppercase mb-2">Exams</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {classes.map(cls => (
+                  {examCategories.map(cat => (
                     <Link
-                      key={cls.id}
-                      to={`/class/${cls.id}`}
+                      key={cat.name}
+                      to={`/exams/${cat.search[0]}`}
                       onClick={() => setIsMenuOpen(false)}
                       className="block p-2 text-sm bg-slate-50 rounded hover:bg-ncert-maroon/5"
                     >
-                      {cls.name}
+                      {cat.name}
                     </Link>
                   ))}
                 </div>

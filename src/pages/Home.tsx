@@ -12,34 +12,34 @@ import {
 
 const SLIDES = [
   {
-    image: "https://picsum.photos/seed/edu1/1920/600",
-    title: "Empowering Education Through Digital Innovation",
-    subtitle: "Access high-quality NCERT textbooks and resources anywhere, anytime.",
+    image: "https://picsum.photos/seed/postal1/1920/600",
+    title: "Excellence in Postal Departmental Exams",
+    subtitle: "Comprehensive study material for GDS to MTS, Postman, and PA/SA exams.",
     color: "from-ncert-maroon/80 to-transparent"
   },
   {
-    image: "https://picsum.photos/seed/edu2/1920/600",
-    title: "Comprehensive Learning Resources for All Classes",
-    subtitle: "From Class I to XII, find everything you need for academic excellence.",
+    image: "https://picsum.photos/seed/postal2/1920/600",
+    title: "Master the Postal Knowledge",
+    subtitle: "Detailed guides on Post Office Guide Part I, II, and Postal Manuals.",
     color: "from-blue-900/80 to-transparent"
   },
   {
-    image: "https://picsum.photos/seed/edu3/1920/600",
-    title: "Interactive Quizzes and Video Lessons",
-    subtitle: "Engage with content through modern pedagogical tools and multimedia.",
+    image: "https://picsum.photos/seed/postal3/1920/600",
+    title: "Interactive Mock Tests",
+    subtitle: "Evaluate your preparation with our specialized postal exam quizzes.",
     color: "from-emerald-900/80 to-transparent"
   }
 ];
 
 const QUICK_LINKS = [
-  { icon: BookOpen, title: "E-Textbooks", desc: "Digital versions of all NCERT books", link: "/" },
-  { icon: FileText, title: "Syllabus", desc: "Latest academic curriculum", link: "/publications" },
-  { icon: GraduationCap, title: "Results", desc: "Examination results and analytics", link: "/competitive-exams" },
-  { icon: LayoutGrid, title: "Programs", desc: "Educational initiatives & schemes", link: "/about" },
-  { icon: Newspaper, title: "Journals", desc: "Research and academic publications", link: "/publications" },
-  { icon: Calendar, title: "Events", desc: "Upcoming workshops and seminars", link: "/contact" },
-  { icon: Users, title: "About Us", desc: "Our mission and organization", link: "/about" },
-  { icon: Info, title: "Contact", desc: "Get in touch with our support team", link: "/contact" },
+  { icon: BookOpen, title: "GDS to MTS", desc: "Study material for MTS recruitment", link: "/exams/mts" },
+  { icon: GraduationCap, title: "Postman Exam", desc: "Resources for Postman/Mail Guard", link: "/exams/postman" },
+  { icon: Trophy, title: "PA/SA Exam", desc: "Postal & Sorting Assistant material", link: "/exams/pa" },
+  { icon: LayoutGrid, title: "LGO Exam", desc: "Lower Grade Official promotion", link: "/exams/lgo" },
+  { icon: Newspaper, title: "IP Exam", desc: "Inspector Posts preparation", link: "/exams/inspector" },
+  { icon: Book, title: "PO Guide", desc: "Post Office Guide Part I & II", link: "/exams/po-guide" },
+  { icon: FileText, title: "Postal Manuals", desc: "Volume V, VI, and VII resources", link: "/exams/manuals" },
+  { icon: Info, title: "Contact", desc: "Get in touch for guidance", link: "/contact" },
 ];
 
 export function Home() {
@@ -145,10 +145,10 @@ export function Home() {
             </div>
             <div className="space-y-4">
               {[
-                "New E-Textbooks for Class X (2026-27) released.",
-                "National Achievement Survey 2026 Participation Guide.",
-                "Teacher Training Workshop on Digital Pedagogy.",
-                "Revised Syllabus for Secondary Education (Phase II)."
+                "Notification for GDS to MTS Exam 2026 released.",
+                "New Mock Test for PA/SA Exam added.",
+                "Updated PO Guide Part I notes available.",
+                "Join our Telegram group for daily updates."
               ].map((news, i) => (
                 <div key={i} className="flex gap-3 group cursor-pointer">
                   <div className="min-w-[4px] bg-ncert-maroon/20 rounded-full group-hover:bg-ncert-maroon transition-colors" />
@@ -208,80 +208,6 @@ export function Home() {
           </div>
         </div>
       </div>
-
-      {/* Footer Section */}
-      <footer className="bg-[#1a1a1a] text-white pt-16 pb-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                  <span className="text-ncert-maroon font-black text-xl">२४</span>
-                </div>
-                <span className="text-xl font-bold tracking-tighter">२४लर्न / 24Learn</span>
-              </div>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Dedicated to providing high-quality educational resources and textbooks to students across the nation. Empowering the next generation through digital learning.
-              </p>
-              <div className="flex gap-4">
-                <Facebook size={20} className="text-slate-400 hover:text-white cursor-pointer transition-colors" />
-                <Twitter size={20} className="text-slate-400 hover:text-white cursor-pointer transition-colors" />
-                <Youtube size={20} className="text-slate-400 hover:text-white cursor-pointer transition-colors" />
-                <Instagram size={20} className="text-slate-400 hover:text-white cursor-pointer transition-colors" />
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-bold mb-6 text-ncert-maroon uppercase tracking-widest text-xs">Quick Links</h4>
-              <ul className="space-y-3 text-sm text-slate-400">
-                <li className="hover:text-white cursor-pointer transition-colors">E-Textbooks</li>
-                <li className="hover:text-white cursor-pointer transition-colors">Syllabus</li>
-                <li className="hover:text-white cursor-pointer transition-colors">Journals</li>
-                <li className="hover:text-white cursor-pointer transition-colors">Programs</li>
-                <li className="hover:text-white cursor-pointer transition-colors">Announcements</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold mb-6 text-ncert-maroon uppercase tracking-widest text-xs">Resources</h4>
-              <ul className="space-y-3 text-sm text-slate-400">
-                <li className="hover:text-white cursor-pointer transition-colors">Video Lessons</li>
-                <li className="hover:text-white cursor-pointer transition-colors">Practice Quizzes</li>
-                <li className="hover:text-white cursor-pointer transition-colors">Digital Notes</li>
-                <li className="hover:text-white cursor-pointer transition-colors">Exam Results</li>
-                <li className="hover:text-white cursor-pointer transition-colors">Teacher Portal</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold mb-6 text-ncert-maroon uppercase tracking-widest text-xs">Contact Us</h4>
-              <ul className="space-y-4 text-sm text-slate-400">
-                <li className="flex gap-3">
-                  <MapPin size={18} className="text-ncert-maroon shrink-0" />
-                  <span>NCERT Campus, Sri Aurobindo Marg, New Delhi-110016</span>
-                </li>
-                <li className="flex gap-3">
-                  <Phone size={18} className="text-ncert-maroon shrink-0" />
-                  <span>+91-11-26560464</span>
-                </li>
-                <li className="flex gap-3">
-                  <Mail size={18} className="text-ncert-maroon shrink-0" />
-                  <span>contact@24learn.edu.in</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-slate-500 uppercase tracking-[0.2em]">
-            <p>© 2026 24Learn Portal. All rights reserved.</p>
-            <div className="flex gap-6">
-              <span className="hover:text-white cursor-pointer">Privacy Policy</span>
-              <span className="hover:text-white cursor-pointer">Terms of Service</span>
-              <span className="hover:text-white cursor-pointer">Copyright Policy</span>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
