@@ -8,7 +8,7 @@ import {
   Download, GraduationCap, Bell, Newspaper, Calendar, Info, 
   ExternalLink, FileText, LayoutGrid, Search, Users, Book,
   Globe, Mail, Phone, MapPin, Facebook, Twitter, Youtube, Instagram,
-  Briefcase, Stamp, Package, MoreHorizontal
+  Briefcase, Stamp, Package, MoreHorizontal, Calculator
 } from 'lucide-react';
 
 const SLIDES = [
@@ -40,7 +40,7 @@ const QUICK_LINKS = [
   { icon: Newspaper, title: "IP Exam", desc: "Inspector Posts preparation", link: "/exams/inspector" },
   { icon: Book, title: "PO Guide", desc: "Post Office Guide Part I & II", link: "/exams/po-guide" },
   { icon: FileText, title: "Postal Manuals", desc: "Volume V, VI, and VII resources", link: "/exams/manuals" },
-  { icon: Info, title: "Contact", desc: "Get in touch for guidance", link: "/contact" },
+  { icon: Calculator, title: "Accountant Exam", desc: "PO Accountant Exam resources", link: "/exams/accountant" },
 ];
 
 const BRANCHES = [
@@ -126,18 +126,22 @@ export function Home() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-16 relative z-20">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {QUICK_LINKS.map((item, i) => (
-            <motion.a
+            <Link
               key={i}
-              href={item.link}
-              whileHover={{ y: -5 }}
-              className="bg-white p-6 rounded-sm shadow-lg border-b-4 border-postal-red flex flex-col items-center text-center group transition-all"
+              to={item.link}
+              className="block"
             >
-              <div className="w-12 h-12 bg-postal-red/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-postal-red group-hover:text-white transition-colors">
-                <item.icon size={24} className="text-postal-red group-hover:text-white" />
-              </div>
-              <h3 className="font-bold text-slate-800 mb-1">{item.title}</h3>
-              <p className="text-[11px] text-slate-500 leading-tight">{item.desc}</p>
-            </motion.a>
+              <motion.div
+                whileHover={{ y: -5 }}
+                className="bg-white p-6 rounded-sm shadow-lg border-b-4 border-postal-red flex flex-col items-center text-center group transition-all h-full"
+              >
+                <div className="w-12 h-12 bg-postal-red/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-postal-red group-hover:text-white transition-colors">
+                  <item.icon size={24} className="text-postal-red group-hover:text-white" />
+                </div>
+                <h3 className="font-bold text-slate-800 mb-1">{item.title}</h3>
+                <p className="text-[11px] text-slate-500 leading-tight">{item.desc}</p>
+              </motion.div>
+            </Link>
           ))}
         </div>
       </div>

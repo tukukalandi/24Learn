@@ -16,6 +16,8 @@ import { POGuide } from './pages/POGuide';
 import { BDBranch } from './pages/BDBranch';
 import { Rules } from './pages/Rules';
 import { Contact } from './pages/Contact';
+import { AccountantExam } from './pages/AccountantExam';
+import { SavingsBranch } from './pages/SavingsBranch';
 
 export default function App() {
   return (
@@ -28,6 +30,8 @@ export default function App() {
               <Route path="/" element={<Home />} />
               <Route path="/rules" element={<Rules />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/exams/accountant" element={<AccountantExam />} />
+              <Route path="/branch/savings" element={<SavingsBranch />} />
               <Route path="/competitive-exams" element={<CompetitiveExams />} />
               <Route path="/exams/po-guide" element={<POGuide />} />
               <Route path="/branch/bd" element={<BDBranch />} />

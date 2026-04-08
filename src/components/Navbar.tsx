@@ -45,6 +45,7 @@ export function Navbar() {
   const branches = [
     { name: 'Mail Branch', icon: Mail },
     { name: 'BD Branch', icon: Briefcase },
+    { name: 'Savings Branch', icon: Package },
     { name: 'Philately Branch', icon: Stamp },
     { name: 'Parcel Branch', icon: Package },
     { name: 'CCS Branch', icon: Users },
@@ -148,7 +149,10 @@ export function Navbar() {
                     {branches.map((branch) => (
                       <Link
                         key={branch.name}
-                        to={branch.name === 'BD Branch' ? '/branch/bd' : '#'}
+                        to={
+                          branch.name === 'BD Branch' ? '/branch/bd' : 
+                          branch.name === 'Savings Branch' ? '/branch/savings' : '#'
+                        }
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-sm font-semibold text-slate-700 transition-colors border-b border-slate-50 last:border-0"
                         onClick={() => setIsBranchMenuOpen(false)}
                       >
