@@ -288,7 +288,14 @@ export function Navbar() {
                   </button>
                   <div className="h-[1px] bg-slate-100 my-1" />
                   <Link to="/about" className="block px-6 py-2.5 hover:bg-slate-50 text-slate-700 hover:text-postal-red text-sm font-bold transition-colors">ABOUT US</Link>
-                  <Link to="/publications" className="block px-6 py-2.5 hover:bg-slate-50 text-slate-700 hover:text-postal-red text-sm font-bold transition-colors">PUBLICATIONS</Link>
+                  <a 
+                    href="https://officedirectorydkldvn.edgeone.app/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block px-6 py-2.5 hover:bg-slate-50 text-slate-700 hover:text-postal-red text-sm font-bold transition-colors uppercase"
+                  >
+                    Office Directory
+                  </a>
                   <Link to="/contact" className="block px-6 py-2.5 hover:bg-slate-50 text-slate-700 hover:text-postal-red text-sm font-bold transition-colors">CONTACT</Link>
                 </div>
               </div>
@@ -343,7 +350,15 @@ export function Navbar() {
                   >
                     BD Branch Website
                   </button>
-                  <Link to="/publications" onClick={() => setIsMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-600 hover:text-postal-red">PUBLICATIONS</Link>
+                  <a 
+                    href="https://officedirectorydkldvn.edgeone.app/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block py-2 text-sm font-semibold text-slate-600 hover:text-postal-red"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    OFFICE DIRECTORY
+                  </a>
                   <Link to="/about" onClick={() => setIsMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-600 hover:text-postal-red">ABOUT US</Link>
                   <Link to="/contact" onClick={() => setIsMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-600 hover:text-postal-red">CONTACT</Link>
                 </div>
