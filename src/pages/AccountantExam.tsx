@@ -9,11 +9,24 @@ import { Link } from 'react-router-dom';
 const syllabusData = {
   p1p1: {
     title: "Part I: Service Rules",
-    items: ["FRs 1 to 56", "SRs 1 to 203", "CCS (Joining Time) Rules 1979", "CCS (Leave) Rules 1972", "CCS (Pension) Rules 1972 / NPS", "GPF (CS) Rules 1960"]
+    items: [
+      "FRs 1 to 56", 
+      "SRs 1 to 203", 
+      "CCS (Joining Time) Rules 1979", 
+      { name: "CCS (Leave) Rules 1972", link: "https://leave-rules.vercel.app/" },
+      "CCS (Pension) Rules 1972 / NPS", 
+      "GPF (CS) Rules 1960"
+    ]
   },
   p1p2: {
     title: "Part II: Allowances & GDS",
-    items: ["Dearness Allowance (DA)", "House Rent Allowance (HRA)", "City Compensatory Allowance (CCA)", "Children Education Allowance (CEA)", "GDS Service Rules (Sec III, VI, VII, IX, XI)"]
+    items: [
+      "Dearness Allowance (DA)", 
+      "House Rent Allowance (HRA)", 
+      "City Compensatory Allowance (CCA)", 
+      { name: "Children Education Allowance (CEA)", link: "https://children-education-allowance.vercel.app/" },
+      "GDS Service Rules (Sec III, VI, VII, IX, XI)"
+    ]
   },
   p2p1: {
     title: "Part I: FHB & SAP Manuals",
@@ -155,15 +168,31 @@ export function AccountantExam() {
                           {(syllabusData as any)[key].title}
                         </h3>
                         <ul className="space-y-3">
-                          {(syllabusData as any)[key].items.map((item: string, idx: number) => {
+                          {(syllabusData as any)[key].items.map((item: any, idx: number) => {
+                            const isObject = typeof item === 'object';
+                            const name = isObject ? item.name : item;
+                            const link = isObject ? item.link : null;
+
                             return (
                               <li key={idx} className="flex items-start space-x-3 p-2 rounded-lg hover:bg-red-50 transition group">
                                 <div className="mt-1 text-postal-red">
                                   <ChevronRight size={16} />
                                 </div>
-                                <span className="text-slate-700 text-sm md:text-base transition-all group-hover:text-postal-red">
-                                  {item}
-                                </span>
+                                {link ? (
+                                  <a 
+                                    href={link} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-postal-red text-sm md:text-base font-medium hover:underline flex items-center gap-1"
+                                  >
+                                    {name}
+                                    <FileText size={14} className="opacity-50" />
+                                  </a>
+                                ) : (
+                                  <span className="text-slate-700 text-sm md:text-base transition-all group-hover:text-postal-red">
+                                    {name}
+                                  </span>
+                                )}
                               </li>
                             );
                           })}
@@ -187,15 +216,31 @@ export function AccountantExam() {
                           {(syllabusData as any)[key].title}
                         </h3>
                         <ul className="space-y-3">
-                          {(syllabusData as any)[key].items.map((item: string, idx: number) => {
+                          {(syllabusData as any)[key].items.map((item: any, idx: number) => {
+                            const isObject = typeof item === 'object';
+                            const name = isObject ? item.name : item;
+                            const link = isObject ? item.link : null;
+
                             return (
                               <li key={idx} className="flex items-start space-x-3 p-2 rounded-lg hover:bg-red-50 transition group">
                                 <div className="mt-1 text-postal-red">
                                   <ChevronRight size={16} />
                                 </div>
-                                <span className="text-slate-700 text-sm md:text-base transition-all group-hover:text-postal-red">
-                                  {item}
-                                </span>
+                                {link ? (
+                                  <a 
+                                    href={link} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-postal-red text-sm md:text-base font-medium hover:underline flex items-center gap-1"
+                                  >
+                                    {name}
+                                    <FileText size={14} className="opacity-50" />
+                                  </a>
+                                ) : (
+                                  <span className="text-slate-700 text-sm md:text-base transition-all group-hover:text-postal-red">
+                                    {name}
+                                  </span>
+                                )}
                               </li>
                             );
                           })}

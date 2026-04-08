@@ -7,6 +7,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { FloatingBackButton } from './components/FloatingBackButton';
+import { Breadcrumbs } from './components/Breadcrumbs';
 import { Home } from './pages/Home';
 import { ClassView } from './pages/ClassView';
 import { SubjectView } from './pages/SubjectView';
@@ -25,6 +27,8 @@ export default function App() {
       <Router>
         <div className="flex min-h-screen flex-col">
           <Navbar />
+          <Breadcrumbs />
+          <FloatingBackButton />
           <main className="flex-grow">
             <Routes>
               <Route path="/" element={<Home />} />

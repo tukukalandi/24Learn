@@ -32,7 +32,7 @@ export function BDBranch() {
     {
       title: "BD Interface",
       desc: "Internal Business Development Operations Interface",
-      link: "#",
+      link: "https://dhenkanal-postal-division-interface.vercel.app/",
       color: "bg-[#1976d2]", // Blue
       icon: LayoutDashboard
     }
