@@ -44,7 +44,7 @@ export function BDBranch() {
     {
       title: "BNPL Services",
       desc: "Book Now Pay Later Service Management and Guidelines",
-      link: "#",
+      link: "https://bnpl-services.vercel.app/",
       color: "bg-[#7e57c2]", // Purple
       icon: CreditCard
     },

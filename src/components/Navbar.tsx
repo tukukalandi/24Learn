@@ -182,7 +182,8 @@ export function Navbar() {
                         key={branch.name}
                         to={
                           branch.name === 'BD Branch' ? '/branch/bd' : 
-                          branch.name === 'Savings Branch' ? '/branch/savings' : '#'
+                          branch.name === 'Savings Branch' ? '/branch/savings' : 
+                          branch.name === 'Other Branch' ? '/branch/other' : '#'
                         }
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-sm font-semibold text-slate-700 transition-colors border-b border-slate-50 last:border-0"
                         onClick={() => setIsBranchMenuOpen(false)}
@@ -255,6 +256,14 @@ export function Navbar() {
               <Link to="/" className="hover:text-postal-yellow transition-colors tracking-widest">HOME</Link>
               <Link to="/rules" className="hover:text-postal-yellow transition-colors tracking-widest">RULES</Link>
               <Link to="/exams/po-guide" className="hover:text-postal-yellow transition-colors tracking-widest">GUIDES</Link>
+              <a 
+                href="https://app.indiapost.gov.in/idam/realms/indiapost/protocol/openid-connect/auth?response_type=code&client_id=internal_client&redirect_uri=https%3A%2F%2Fapp.indiapost.gov.in%2Fmisreports%2Fapi%2Fauth%2Fcallback%2Fkeycloak&nextauth=keycloak&code_challenge=DYh9BEOftOFrXgjvcqOuqaIWX2dvEdA4BimdY_o0RKM&code_challenge_method=S256&scope=openid+profile+email" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-postal-yellow transition-colors tracking-widest uppercase"
+              >
+                APT 2.0
+              </a>
               
               <div className="relative group h-12 flex items-center">
                 <button className="hover:text-postal-yellow transition-colors flex items-center gap-1 tracking-widest uppercase">
@@ -320,6 +329,15 @@ export function Navbar() {
               <Link to="/" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700 border-b border-slate-50">HOME</Link>
               <Link to="/rules" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700 border-b border-slate-50">RULES</Link>
               <Link to="/exams/po-guide" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700 border-b border-slate-50">GUIDES</Link>
+              <a 
+                href="https://app.indiapost.gov.in/idam/realms/indiapost/protocol/openid-connect/auth?response_type=code&client_id=internal_client&redirect_uri=https%3A%2F%2Fapp.indiapost.gov.in%2Fmisreports%2Fapi%2Fauth%2Fcallback%2Fkeycloak&nextauth=keycloak&code_challenge=DYh9BEOftOFrXgjvcqOuqaIWX2dvEdA4BimdY_o0RKM&code_challenge_method=S256&scope=openid+profile+email" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="block py-2 font-bold text-slate-700 border-b border-slate-50"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                APT 2.0
+              </a>
               
               <div className="py-2">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Others</p>

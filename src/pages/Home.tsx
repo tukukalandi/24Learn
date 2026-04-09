@@ -164,6 +164,10 @@ export function Home() {
                 onClick={() => {
                   if (branch.name === 'BD Branch') {
                     navigate('/branch/bd');
+                  } else if (branch.name === 'Savings Branch') {
+                    navigate('/branch/savings');
+                  } else if (branch.name === 'Other Branch') {
+                    navigate('/branch/other');
                   }
                 }}
                 className="group p-6 bg-slate-50 rounded-sm border border-slate-100 hover:bg-white hover:shadow-xl hover:border-postal-red/20 transition-all cursor-pointer"
