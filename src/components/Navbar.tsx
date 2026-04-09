@@ -150,12 +150,14 @@ export function Navbar() {
                 <ArrowLeft size={24} />
               </button>
             )}
-            <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/250px-Emblem_of_India.svg.png" 
-              alt="Indian National Emblem" 
-              className="h-12 brightness-0 invert"
-              referrerPolicy="no-referrer"
-            />
+            <div className="bg-white p-1 rounded-sm shadow-sm flex items-center justify-center">
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" 
+                alt="Indian National Emblem" 
+                className="h-14 w-auto"
+                referrerPolicy="no-referrer"
+              />
+            </div>
             {/* Branch Menu Button */}
             <div className="branch-menu-container relative">
               <button 
@@ -214,9 +216,6 @@ export function Navbar() {
             </div>
 
             <Link to="/" className="flex items-center gap-4 group">
-              <div className="bg-white/10 p-2 rounded-full shadow-inner group-hover:scale-105 transition-transform">
-                <Globe className="text-postal-yellow" size={48} />
-              </div>
               <div className="text-center md:text-left">
                 <h1 className="text-xl md:text-2xl font-bold leading-tight tracking-wide text-white">डाकशिक्षा</h1>
                 <h2 className="text-lg md:text-xl font-semibold leading-tight text-white">DakShiksha</h2>
@@ -238,12 +237,14 @@ export function Navbar() {
                 <Search size={18} />
               </button>
             </form>
-            <img 
-              src="https://upload.wikimedia.org/wikipedia/en/thumb/3/32/India_Post.svg/250px-India_Post.svg.png" 
-              alt="India Post Logo" 
-              className="h-12 brightness-0 invert"
-              referrerPolicy="no-referrer"
-            />
+            <div className="bg-white p-1 rounded-sm shadow-sm flex items-center justify-center">
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/en/3/32/India_Post.svg" 
+                alt="India Post Logo" 
+                className="h-14 w-auto"
+                referrerPolicy="no-referrer"
+              />
+            </div>
           </div>
         </div>
       </div>

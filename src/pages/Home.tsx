@@ -8,7 +8,8 @@ import {
   Download, GraduationCap, Bell, Newspaper, Calendar, Info, 
   ExternalLink, FileText, LayoutGrid, Search, Users, Book,
   Globe, Mail, Phone, MapPin, Facebook, Twitter, Youtube, Instagram,
-  Briefcase, Stamp, Package, MoreHorizontal, Calculator
+  Briefcase, Stamp, Package, MoreHorizontal, Calculator,
+  AlertCircle, Landmark, ShieldCheck, Fingerprint, Map, FileDown, Smartphone, Send
 } from 'lucide-react';
 
 const SLIDES = [
@@ -50,6 +51,21 @@ const BRANCHES = [
   { name: 'Parcel Branch', icon: Package, desc: 'Parcel and logistics management' },
   { name: 'CCS Branch', icon: Users, desc: 'Central Civil Services guidelines' },
   { name: 'Other Branch', icon: MoreHorizontal, desc: 'Miscellaneous postal operations' },
+];
+
+const SERVICES = [
+  { title: "Track Consignment", icon: Search, color: "text-emerald-600", bg: "bg-emerald-50" },
+  { title: "File Complaint", icon: AlertCircle, color: "text-red-500", bg: "bg-red-50" },
+  { title: "Locate Post Office", icon: MapPin, color: "text-postal-red", bg: "bg-red-50" },
+  { title: "Banking & Savings", icon: Landmark, color: "text-amber-600", bg: "bg-amber-50" },
+  { title: "PLI / RPLI", icon: ShieldCheck, color: "text-blue-600", bg: "bg-blue-50" },
+  { title: "Postage Calculator", icon: Calculator, color: "text-orange-500", bg: "bg-orange-50" },
+  { title: "Aadhaar Services", icon: Fingerprint, color: "text-indigo-600", bg: "bg-indigo-50" },
+  { title: "DIGIPIN", icon: Map, color: "text-rose-500", bg: "bg-rose-50" },
+  { title: "Download Forms", icon: FileDown, color: "text-slate-600", bg: "bg-slate-50" },
+  { title: "Vacancies", icon: Briefcase, color: "text-amber-800", bg: "bg-amber-50" },
+  { title: "IPPB Service", icon: Smartphone, color: "text-blue-500", bg: "bg-blue-50" },
+  { title: "Money Transfer", icon: Send, color: "text-cyan-600", bg: "bg-cyan-50" },
 ];
 
 export function Home() {
@@ -180,6 +196,39 @@ export function Home() {
                 <div className="flex items-center gap-1 text-xs font-bold text-postal-red uppercase tracking-wider group-hover:gap-2 transition-all">
                   Explore Branch <ArrowRight size={14} />
                 </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Our Services Section */}
+      <div className="bg-slate-50 py-20 border-b border-slate-200">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-block bg-postal-yellow text-slate-900 px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-4 shadow-sm">
+              Our Services
+            </div>
+            <h2 className="text-4xl font-bold text-slate-800 mb-4">What would you like to do today?</h2>
+            <p className="text-slate-500">Access all postal services of Dhenkanal Division</p>
+            <div className="w-20 h-1 bg-postal-yellow mx-auto mt-6 rounded-full" />
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {SERVICES.map((service, i) => (
+              <motion.div
+                key={service.title}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                whileHover={{ y: -5 }}
+                className="bg-white p-6 rounded-sm shadow-sm border border-slate-100 flex flex-col items-center text-center group cursor-pointer hover:shadow-md transition-all"
+              >
+                <div className={`w-12 h-12 ${service.bg} rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                  <service.icon size={24} className={service.color} />
+                </div>
+                <h3 className="text-xs font-bold text-slate-700 leading-tight">{service.title}</h3>
               </motion.div>
             ))}
           </div>
