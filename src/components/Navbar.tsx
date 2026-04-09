@@ -137,14 +137,14 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Main Branding Header (White) */}
-      <div className="bg-white text-slate-900 py-4 shadow-sm relative border-b border-slate-100">
+      {/* Main Branding Header (Dark Red) */}
+      <div className="bg-postal-branding text-white py-4 shadow-sm relative border-b border-white/10">
         <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
           <div className="flex items-center gap-4 w-full md:w-auto">
             {!isHome && (
               <button 
                 onClick={() => navigate(-1)}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600 md:hidden"
+                className="p-2 hover:bg-white/10 rounded-full transition-colors text-white md:hidden"
                 aria-label="Go Back"
               >
                 <ArrowLeft size={24} />
@@ -153,7 +153,7 @@ export function Navbar() {
             <img 
               src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/250px-Emblem_of_India.svg.png" 
               alt="Indian National Emblem" 
-              className="h-12"
+              className="h-12 brightness-0 invert"
               referrerPolicy="no-referrer"
             />
             {/* Branch Menu Button */}
@@ -163,7 +163,7 @@ export function Navbar() {
                   e.stopPropagation();
                   setIsBranchMenuOpen(!isBranchMenuOpen);
                 }}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-postal-red"
+                className="p-2 hover:bg-white/10 rounded-full transition-colors text-postal-yellow"
                 aria-label="Toggle Branch Menu"
               >
                 {isBranchMenuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -214,13 +214,13 @@ export function Navbar() {
             </div>
 
             <Link to="/" className="flex items-center gap-4 group">
-              <div className="bg-postal-red/5 p-2 rounded-full shadow-inner group-hover:scale-105 transition-transform">
-                <Globe className="text-postal-red" size={48} />
+              <div className="bg-white/10 p-2 rounded-full shadow-inner group-hover:scale-105 transition-transform">
+                <Globe className="text-postal-yellow" size={48} />
               </div>
               <div className="text-center md:text-left">
-                <h1 className="text-xl md:text-2xl font-bold leading-tight tracking-wide text-postal-red">डाकशिक्षा</h1>
-                <h2 className="text-lg md:text-xl font-semibold leading-tight text-slate-800">DakShiksha</h2>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 mt-1">Postal Educational Knowledge Portal</p>
+                <h1 className="text-xl md:text-2xl font-bold leading-tight tracking-wide text-white">डाकशिक्षा</h1>
+                <h2 className="text-lg md:text-xl font-semibold leading-tight text-white">DakShiksha</h2>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-white/80 mt-1">Postal Educational Knowledge Portal</p>
               </div>
             </Link>
           </div>
@@ -232,16 +232,16 @@ export function Navbar() {
                 placeholder="Search resources..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-10 w-full rounded-sm border border-slate-200 bg-slate-50 px-4 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-postal-red focus:outline-none transition-all"
+                className="h-10 w-full rounded-sm border border-white/20 bg-white/10 px-4 pr-10 text-sm text-white placeholder:text-white/50 focus:bg-white/20 focus:border-postal-yellow focus:outline-none transition-all"
               />
-              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-postal-red">
+              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-white/50 hover:text-postal-yellow">
                 <Search size={18} />
               </button>
             </form>
             <img 
               src="https://upload.wikimedia.org/wikipedia/en/thumb/3/32/India_Post.svg/250px-India_Post.svg.png" 
               alt="India Post Logo" 
-              className="h-12"
+              className="h-12 brightness-0 invert"
               referrerPolicy="no-referrer"
             />
           </div>

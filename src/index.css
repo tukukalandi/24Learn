@@ -9,6 +9,7 @@
   --color-postal-yellow: #ffc107;
   --color-postal-bg: #f8f9fa;
   --color-postal-dark-maroon: #2D0000;
+  --color-postal-branding: #6B1111;
   
   /* Keep legacy names for compatibility if needed, but update values */
   --color-ncert-maroon: #d32f2f;
