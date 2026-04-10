@@ -63,7 +63,7 @@ const SERVICES = [
   { title: "Aadhaar Services", icon: Fingerprint, color: "text-indigo-600", bg: "bg-indigo-50" },
   { title: "DIGIPIN", icon: Map, color: "text-rose-500", bg: "bg-rose-50" },
   { title: "Download Forms", icon: FileDown, color: "text-slate-600", bg: "bg-slate-50" },
-  { title: "Vacancies", icon: Briefcase, color: "text-amber-800", bg: "bg-amber-50" },
+  { title: "Ready Reckoner", icon: Book, color: "text-amber-800", bg: "bg-amber-50", link: "https://drive.google.com/file/d/1FfyMvtgGqJIKPZ0u3dEi_l6npik7t9oL/view?usp=sharing" },
   { title: "IPPB Service", icon: Smartphone, color: "text-blue-500", bg: "bg-blue-50" },
   { title: "Money Transfer", icon: Send, color: "text-cyan-600", bg: "bg-cyan-50" },
 ];
@@ -215,22 +215,43 @@ export function Home() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {SERVICES.map((service, i) => (
-              <motion.div
-                key={service.title}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                whileHover={{ y: -5 }}
-                className="bg-white p-6 rounded-sm shadow-sm border border-slate-100 flex flex-col items-center text-center group cursor-pointer hover:shadow-md transition-all"
-              >
-                <div className={`w-12 h-12 ${service.bg} rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                  <service.icon size={24} className={service.color} />
+            {SERVICES.map((service, i) => {
+              const CardContent = (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05 }}
+                  whileHover={{ y: -5 }}
+                  className="bg-white p-6 rounded-sm shadow-sm border border-slate-100 flex flex-col items-center text-center group cursor-pointer hover:shadow-md transition-all h-full"
+                >
+                  <div className={`w-12 h-12 ${service.bg} rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                    <service.icon size={24} className={service.color} />
+                  </div>
+                  <h3 className="text-xs font-bold text-slate-700 leading-tight">{service.title}</h3>
+                </motion.div>
+              );
+
+              if (service.link) {
+                return (
+                  <a 
+                    key={service.title} 
+                    href={service.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block h-full"
+                  >
+                    {CardContent}
+                  </a>
+                );
+              }
+
+              return (
+                <div key={service.title}>
+                  {CardContent}
                 </div>
-                <h3 className="text-xs font-bold text-slate-700 leading-tight">{service.title}</h3>
-              </motion.div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
