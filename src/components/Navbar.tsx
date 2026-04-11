@@ -179,21 +179,40 @@ export function Navbar() {
                     <p className="text-[10px] opacity-70 uppercase tracking-widest">Select a branch to explore</p>
                   </div>
                   <div className="py-2">
-                    {branches.map((branch) => (
-                      <Link
-                        key={branch.name}
-                        to={
-                          branch.name === 'BD Branch' ? '/branch/bd' : 
-                          branch.name === 'Savings Branch' ? '/branch/savings' : 
-                          branch.name === 'Other Branch' ? '/branch/other' : '#'
-                        }
-                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-sm font-semibold text-slate-700 transition-colors border-b border-slate-50 last:border-0"
-                        onClick={() => setIsBranchMenuOpen(false)}
-                      >
-                        <branch.icon size={18} className="text-postal-red" />
-                        {branch.name}
-                      </Link>
-                    ))}
+                    {branches.map((branch) => {
+                      const isExternal = branch.name === 'Philately Branch';
+                      const link = branch.name === 'BD Branch' ? '/branch/bd' : 
+                                   branch.name === 'Savings Branch' ? '/branch/savings' : 
+                                   branch.name === 'Other Branch' ? '/branch/other' : '#';
+                      
+                      if (isExternal) {
+                        return (
+                          <a
+                            key={branch.name}
+                            href="https://philately.vercel.app/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-sm font-semibold text-slate-700 transition-colors border-b border-slate-50 last:border-0"
+                            onClick={() => setIsBranchMenuOpen(false)}
+                          >
+                            <branch.icon size={18} className="text-postal-red" />
+                            {branch.name}
+                          </a>
+                        );
+                      }
+
+                      return (
+                        <Link
+                          key={branch.name}
+                          to={link}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-sm font-semibold text-slate-700 transition-colors border-b border-slate-50 last:border-0"
+                          onClick={() => setIsBranchMenuOpen(false)}
+                        >
+                          <branch.icon size={18} className="text-postal-red" />
+                          {branch.name}
+                        </Link>
+                      );
+                    })}
                   </div>
                   <div className="bg-slate-50 p-3 border-t border-slate-200">
                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Quick Access</h4>

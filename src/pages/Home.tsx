@@ -62,7 +62,7 @@ const SERVICES = [
   { title: "Postage Calculator", icon: Calculator, color: "text-orange-500", bg: "bg-orange-50" },
   { title: "Aadhaar Services", icon: Fingerprint, color: "text-indigo-600", bg: "bg-indigo-50" },
   { title: "DIGIPIN", icon: Map, color: "text-rose-500", bg: "bg-rose-50" },
-  { title: "Download Forms", icon: FileDown, color: "text-slate-600", bg: "bg-slate-50" },
+  { title: "Download Forms", icon: FileDown, color: "text-slate-600", bg: "bg-slate-50", link: "https://postal-forms.vercel.app/" },
   { title: "Ready Reckoner", icon: Book, color: "text-amber-800", bg: "bg-amber-50", link: "https://drive.google.com/file/d/1FfyMvtgGqJIKPZ0u3dEi_l6npik7t9oL/view?usp=sharing" },
   { title: "IPPB Service", icon: Smartphone, color: "text-blue-500", bg: "bg-blue-50" },
   { title: "Money Transfer", icon: Send, color: "text-cyan-600", bg: "bg-cyan-50" },
@@ -184,6 +184,8 @@ export function Home() {
                     navigate('/branch/savings');
                   } else if (branch.name === 'Other Branch') {
                     navigate('/branch/other');
+                  } else if (branch.name === 'Philately Branch') {
+                    window.open('https://philately.vercel.app/', '_blank');
                   }
                 }}
                 className="group p-6 bg-slate-50 rounded-sm border border-slate-100 hover:bg-white hover:shadow-xl hover:border-postal-red/20 transition-all cursor-pointer"
