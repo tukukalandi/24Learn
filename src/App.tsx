@@ -21,6 +21,7 @@ import { Contact } from './pages/Contact';
 import { AccountantExam } from './pages/AccountantExam';
 import { SavingsBranch } from './pages/SavingsBranch';
 import { OtherBranch } from './pages/OtherBranch';
+import { SearchResults } from './pages/SearchResults';
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
           <main className="flex-grow">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/search" element={<SearchResults />} />
               <Route path="/rules" element={<Rules />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/exams/accountant" element={<AccountantExam />} />

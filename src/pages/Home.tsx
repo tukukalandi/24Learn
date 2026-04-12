@@ -14,6 +14,30 @@ import {
 
 const SLIDES = [
   {
+    image: "https://picsum.photos/seed/logistics/1920/600",
+    title: "Global Postal Logistics",
+    subtitle: "Seamless connectivity across the world with India Post.",
+    color: "from-postal-red/60 to-transparent"
+  },
+  {
+    image: "https://picsum.photos/seed/delivery/1920/600",
+    title: "Speed Post 24",
+    subtitle: "Guaranteed next-day delivery for your important parcels and documents.",
+    color: "from-postal-red/60 to-transparent"
+  },
+  {
+    image: "https://picsum.photos/seed/education/1920/600",
+    title: "Pariksha Pe Charcha 2026",
+    subtitle: "Join the conversation with Hon'ble PM Narendra Modi.",
+    color: "from-blue-600/60 to-transparent"
+  },
+  {
+    image: "https://picsum.photos/seed/stamps/1920/600",
+    title: "World of Stamps",
+    subtitle: "Explore the rich heritage of Indian Philately from 1854 to today.",
+    color: "from-amber-600/60 to-transparent"
+  },
+  {
     image: "https://picsum.photos/seed/postal1/1920/600",
     title: "Excellence in Postal Departmental Exams",
     subtitle: "Comprehensive study material for GDS to MTS, Postman, and PA/SA exams.",

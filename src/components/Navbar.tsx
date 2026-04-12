@@ -1,13 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Search, Menu, X, ChevronRight, Globe, Type, Eye, 
   Mail, Briefcase, Stamp, Package, Users, MoreHorizontal,
-  UserCircle, FileText, Download, Calendar, ArrowLeft
+  UserCircle, FileText, Download, Calendar, ArrowLeft,
+  GraduationCap, Book, BookOpen
 } from 'lucide-react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { cn } from '../lib/utils';
+import Fuse from 'fuse.js';
+
+interface SearchItem {
+  id: string;
+  type: 'class' | 'subject' | 'chapter';
+  title: string;
+  subtitle?: string;
+  link: string;
+}
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,7 +27,9 @@ export function Navbar() {
   const navigate = useNavigate();
 
   const [subjectsList, setSubjectsList] = useState<any[]>([]);
+  const [chapters, setChapters] = useState<any[]>([]);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [showSearchPreview, setShowSearchPreview] = useState(false);
   const location = useLocation();
   const isHome = location.pathname === '/';
 
@@ -36,11 +48,52 @@ export function Navbar() {
       setSubjectsList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     }, (error) => handleFirestoreError(error, OperationType.LIST, 'subjects'));
 
+    const unsubChapters = onSnapshot(collection(db, 'chapters'), (snap) => {
+      setChapters(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }, (error) => handleFirestoreError(error, OperationType.LIST, 'chapters'));
+
     return () => {
       unsubClasses();
       unsubSubjects();
+      unsubChapters();
     };
   }, []);
+
+  const searchIndex = useMemo(() => {
+    const items: SearchItem[] = [
+      ...classes.map(c => ({ id: c.id, type: 'class' as const, title: c.name, link: `/class/${c.id}` })),
+      ...subjectsList.map(s => {
+        const className = classes.find(c => c.id === s.classId)?.name || '';
+        return { id: s.id, type: 'subject' as const, title: s.name, subtitle: className, link: `/class/${s.classId}/subject/${s.id}` };
+      }),
+      ...chapters.map(ch => {
+        const subject = subjectsList.find(s => s.id === ch.subjectId);
+        const className = classes.find(c => c.id === ch.classId)?.name || '';
+        return { 
+          id: ch.id, 
+          type: 'chapter' as const, 
+          title: ch.title || ch.name, 
+          subtitle: `${className} • ${subject?.name || ''}`, 
+          link: `/class/${ch.classId}/subject/${ch.subjectId}/chapter/${ch.id}` 
+        };
+      })
+    ];
+    return new Fuse(items, { keys: ['title', 'subtitle'], threshold: 0.3 });
+  }, [classes, subjectsList, chapters]);
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    return searchIndex.search(searchQuery.trim()).slice(0, 5).map(r => r.item);
+  }, [searchIndex, searchQuery]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setShowSearchPreview(false);
+      setIsMenuOpen(false);
+    }
+  };
 
   const examCategories = [
     { name: 'GDS to MTS', search: ['mts'] },
@@ -83,13 +136,6 @@ export function Navbar() {
     return sub?.id;
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      console.log('Searching for:', searchQuery);
-    }
-  };
-
   const handleBDAuth = (e: React.FormEvent) => {
     e.preventDefault();
     const userIdRegex = /^1\d{7}$/;
@@ -112,6 +158,10 @@ export function Navbar() {
       const target = e.target as HTMLElement;
       if (!target.closest('.branch-menu-container')) {
         setIsBranchMenuOpen(false);
+      }
+      // Close search preview if clicking outside
+      if (!target.closest('.search-container')) {
+        setShowSearchPreview(false);
       }
     };
     window.addEventListener('click', handleClickOutside);
@@ -249,18 +299,76 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-4 w-full md:w-auto">
-            <form onSubmit={handleSearch} className="relative flex-1 md:w-80">
-              <input
-                type="text"
-                placeholder="Search resources..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-10 w-full rounded-sm border border-white/20 bg-white/10 px-4 pr-10 text-sm text-white placeholder:text-white/50 focus:bg-white/20 focus:border-postal-yellow focus:outline-none transition-all"
-              />
-              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-white/50 hover:text-postal-yellow">
-                <Search size={18} />
-              </button>
-            </form>
+            <div className="relative flex-1 md:w-80 search-container">
+              <form onSubmit={handleSearch} className="relative">
+                <input
+                  type="text"
+                  placeholder="Search resources..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowSearchPreview(true);
+                  }}
+                  onFocus={() => setShowSearchPreview(true)}
+                  className="h-10 w-full rounded-sm border border-white/20 bg-white/10 px-4 pr-10 text-sm text-white placeholder:text-white/50 focus:bg-white/20 focus:border-postal-yellow focus:outline-none transition-all"
+                />
+                <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-white/50 hover:text-postal-yellow">
+                  <Search size={18} />
+                </button>
+              </form>
+
+              {/* Search Preview Dropdown */}
+              {showSearchPreview && searchQuery.trim() && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-2xl border border-slate-200 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="p-2">
+                    {searchResults.length > 0 ? (
+                      <>
+                        {searchResults.map((item) => (
+                          <Link
+                            key={`${item.type}-${item.id}`}
+                            to={item.link}
+                            onClick={() => {
+                              setShowSearchPreview(false);
+                              setSearchQuery('');
+                            }}
+                            className="flex items-center gap-3 p-3 hover:bg-slate-50 rounded-md transition-colors group"
+                          >
+                            <div className={cn(
+                              "w-8 h-8 rounded flex items-center justify-center shrink-0",
+                              item.type === 'class' ? "bg-blue-50 text-blue-600" :
+                              item.type === 'subject' ? "bg-emerald-50 text-emerald-600" :
+                              "bg-amber-50 text-amber-600"
+                            )}>
+                              {item.type === 'class' ? <GraduationCap size={16} /> :
+                               item.type === 'subject' ? <Book size={16} /> :
+                               <BookOpen size={16} />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-bold text-slate-800 group-hover:text-postal-red truncate">
+                                {item.title}
+                              </h4>
+                              {item.subtitle && (
+                                <p className="text-[10px] text-slate-500 truncate">{item.subtitle}</p>
+                              )}
+                            </div>
+                          </Link>
+                        ))}
+                        <button
+                          onClick={handleSearch}
+                          className="w-full mt-2 p-2 text-xs font-bold text-postal-red hover:bg-postal-red/5 rounded transition-colors border-t border-slate-100"
+                        >
+                          View all results
+                        </button>
+                      </>
+                    ) : (
+                      <div className="p-4 text-center">
+                        <p className="text-xs text-slate-500">No results found for "{searchQuery}"</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="bg-white p-1 rounded-sm shadow-sm flex items-center justify-center">
               <img 
                 src="https://upload.wikimedia.org/wikipedia/en/3/32/India_Post.svg" 
