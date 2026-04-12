@@ -431,7 +431,7 @@ export function Navbar() {
                   <div className="h-[1px] bg-slate-100 my-1" />
                   <Link to="/about" className="block px-6 py-2.5 hover:bg-slate-50 text-slate-700 hover:text-postal-red text-sm font-bold transition-colors">ABOUT US</Link>
                   <a 
-                    href="https://officedirectorydkldvn.edgeone.app/" 
+                    href="https://office-directory.vercel.app/" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="block px-6 py-2.5 hover:bg-slate-50 text-slate-700 hover:text-postal-red text-sm font-bold transition-colors uppercase"
