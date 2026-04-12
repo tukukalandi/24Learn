@@ -390,7 +390,7 @@ export function Navbar() {
               <Link to="/rules" className="hover:text-postal-yellow transition-colors tracking-widest">RULES</Link>
               <Link to="/exams/po-guide" className="hover:text-postal-yellow transition-colors tracking-widest">GUIDES</Link>
               <a 
-                href="https://app.indiapost.gov.in/idam/realms/indiapost/protocol/openid-connect/auth?response_type=code&client_id=internal_client&redirect_uri=https%3A%2F%2Fapp.indiapost.gov.in%2Fmisreports%2Fapi%2Fauth%2Fcallback%2Fkeycloak&nextauth=keycloak&code_challenge=DYh9BEOftOFrXgjvcqOuqaIWX2dvEdA4BimdY_o0RKM&code_challenge_method=S256&scope=openid+profile+email" 
+                href="https://app.indiapost.gov.in/employeeportal" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="hover:text-postal-yellow transition-colors tracking-widest uppercase"
@@ -463,7 +463,7 @@ export function Navbar() {
               <Link to="/rules" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700 border-b border-slate-50">RULES</Link>
               <Link to="/exams/po-guide" onClick={() => setIsMenuOpen(false)} className="block py-2 font-bold text-slate-700 border-b border-slate-50">GUIDES</Link>
               <a 
-                href="https://app.indiapost.gov.in/idam/realms/indiapost/protocol/openid-connect/auth?response_type=code&client_id=internal_client&redirect_uri=https%3A%2F%2Fapp.indiapost.gov.in%2Fmisreports%2Fapi%2Fauth%2Fcallback%2Fkeycloak&nextauth=keycloak&code_challenge=DYh9BEOftOFrXgjvcqOuqaIWX2dvEdA4BimdY_o0RKM&code_challenge_method=S256&scope=openid+profile+email" 
+                href="https://app.indiapost.gov.in/employeeportal" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="block py-2 font-bold text-slate-700 border-b border-slate-50"
