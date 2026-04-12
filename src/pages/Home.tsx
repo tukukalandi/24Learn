@@ -179,7 +179,7 @@ export function Home() {
                 transition={{ delay: i * 0.1 }}
                 onClick={() => {
                   if (branch.name === 'BD Branch') {
-                    navigate('/branch/bd');
+                    window.open('https://bd-branch-dhenkanal.vercel.app/', '_blank');
                   } else if (branch.name === 'Savings Branch') {
                     navigate('/branch/savings');
                   } else if (branch.name === 'Other Branch') {

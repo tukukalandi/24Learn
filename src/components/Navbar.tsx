@@ -180,7 +180,12 @@ export function Navbar() {
                   </div>
                   <div className="py-2">
                     {branches.map((branch) => {
-                      const isExternal = branch.name === 'Philately Branch';
+                      const isExternal = branch.name === 'Philately Branch' || branch.name === 'BD Branch';
+                      const externalLinks: Record<string, string> = {
+                        'Philately Branch': 'https://philately.vercel.app/',
+                        'BD Branch': 'https://bd-branch-dhenkanal.vercel.app/'
+                      };
+                      
                       const link = branch.name === 'BD Branch' ? '/branch/bd' : 
                                    branch.name === 'Savings Branch' ? '/branch/savings' : 
                                    branch.name === 'Other Branch' ? '/branch/other' : '#';
@@ -189,7 +194,7 @@ export function Navbar() {
                         return (
                           <a
                             key={branch.name}
-                            href="https://philately.vercel.app/"
+                            href={externalLinks[branch.name]}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-sm font-semibold text-slate-700 transition-colors border-b border-slate-50 last:border-0"
