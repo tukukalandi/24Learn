@@ -1,63 +1,127 @@
-import { Globe, Github, Twitter, Instagram, Mail, Phone } from 'lucide-react';
+import { 
+  Facebook, Twitter, Youtube, Instagram, Mail, Phone, 
+  Search, Landmark, ShieldCheck, Package, Fingerprint, 
+  Smartphone, Calculator, Info, FileText, Download, 
+  Gavel, Users, Bell, Image, HelpCircle, Calendar, 
+  UserCog, MapPin, Map, BookOpen, ExternalLink,
+  Briefcase, AlertCircle, Globe, Github
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-white px-4 py-12 dark:border-slate-800 dark:bg-slate-950 sm:px-6 lg:px-8">
+    <footer className="bg-[#4a0404] text-white pt-16 pb-8 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
-          <div className="col-span-1 md:col-span-2">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-postal-red text-white shadow-lg shadow-postal-red/20">
-                <Globe size={24} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+          {/* Column 1: DakShiksha Branding */}
+          <div className="space-y-6">
+            <Link to="/" className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-postal-red rounded-xl flex items-center justify-center shadow-lg shadow-postal-red/20">
+                <Globe size={28} className="text-white" />
               </div>
-              <span className="font-display text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              <span className="text-2xl font-bold tracking-tight text-white">
                 Dak<span className="text-postal-red">Shiksha</span>
               </span>
             </Link>
-            <p className="mt-4 max-w-xs text-slate-600 dark:text-slate-400">
+            
+            <p className="text-sm opacity-80 leading-relaxed max-w-xs">
               Your personal guide to mastering postal departmental exams. Empowering postal employees through knowledge.
             </p>
-            <div className="mt-6 flex flex-col gap-2">
-              <a href="mailto:dakshiksha@gmail.com" className="flex items-center gap-2 text-sm text-slate-600 hover:text-postal-red transition-colors dark:text-slate-400">
-                <Mail size={16} /> dakshiksha@gmail.com
+
+            <div className="space-y-3 text-sm">
+              <a href="mailto:dakshiksha@gmail.com" className="flex items-center gap-3 opacity-80 hover:opacity-100 hover:text-[#facc15] transition-all">
+                <Mail size={18} className="text-[#facc15]" /> dakshiksha@gmail.com
               </a>
-              <a href="tel:+918249574543" className="flex items-center gap-2 text-sm text-slate-600 hover:text-postal-red transition-colors dark:text-slate-400">
-                <Phone size={16} /> +91 8249574543
+              <a href="tel:+918249574543" className="flex items-center gap-3 opacity-80 hover:opacity-100 hover:text-[#facc15] transition-all">
+                <Phone size={18} className="text-[#facc15]" /> +91 8249574543
               </a>
             </div>
-            <div className="mt-6 flex gap-4">
-              <a href="#" className="text-slate-400 hover:text-postal-red transition-colors"><Twitter size={20} /></a>
-              <a href="#" className="text-slate-400 hover:text-postal-red transition-colors"><Instagram size={20} /></a>
-              <a href="#" className="text-slate-400 hover:text-postal-red transition-colors"><Github size={20} /></a>
-              <a href="#" className="text-slate-400 hover:text-postal-red transition-colors"><Mail size={20} /></a>
+
+            <div className="flex gap-4 pt-2">
+              {[Twitter, Instagram, Github, Mail].map((Icon, i) => (
+                <a key={i} href="#" className="opacity-60 hover:opacity-100 hover:text-[#facc15] transition-all">
+                  <Icon size={20} />
+                </a>
+              ))}
             </div>
           </div>
-          
+
+          {/* Column 2: SERVICES */}
           <div>
-            <h4 className="font-bold text-slate-900 dark:text-white">Quick Links</h4>
-            <ul className="mt-4 space-y-2 text-slate-600 dark:text-slate-400">
-              <li><Link to="/" className="hover:text-postal-red transition-colors">Home</Link></li>
-              <li><Link to="/about" className="hover:text-postal-red transition-colors">About Us</Link></li>
-              <li><Link to="/competitive-exams" className="hover:text-postal-red transition-colors">Exams</Link></li>
-              <li><Link to="/contact" className="hover:text-postal-red transition-colors">Contact</Link></li>
+            <h3 className="text-[#facc15] font-bold text-lg mb-6 uppercase tracking-wider">Services</h3>
+            <ul className="space-y-4">
+              {[
+                { name: "Track & Trace", icon: Search },
+                { name: "Banking & Savings", icon: Landmark },
+                { name: "Insurance (PLI/RPLI)", icon: ShieldCheck },
+                { name: "Speed Post / Parcels", icon: Package },
+                { name: "Aadhaar Services", icon: Fingerprint },
+                { name: "PLI Online", icon: Smartphone },
+                { name: "Know Your DIGIPIN", icon: Map },
+                { name: "Postage Calculator", icon: Calculator },
+              ].map((item) => (
+                <li key={item.name}>
+                  <a href="#" className="flex items-center gap-3 text-sm opacity-80 hover:opacity-100 hover:text-[#facc15] transition-all group">
+                    <item.icon size={16} className="text-[#facc15] group-hover:scale-110 transition-transform" />
+                    {item.name}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
+          {/* Column 3: INFORMATION */}
           <div>
-            <h4 className="font-bold text-slate-900 dark:text-white">Legal</h4>
-            <ul className="mt-4 space-y-2 text-slate-600 dark:text-slate-400">
-              <li><a href="#" className="hover:text-ncert-maroon transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-ncert-maroon transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-ncert-maroon transition-colors">Cookie Policy</a></li>
+            <h3 className="text-[#facc15] font-bold text-lg mb-6 uppercase tracking-wider">Information</h3>
+            <ul className="space-y-4">
+              {[
+                { name: "About Division", icon: Info },
+                { name: "Post Office Directory", icon: BookOpen },
+                { name: "Forms & Downloads", icon: Download },
+                { name: "Tenders", icon: Gavel },
+                { name: "Vacancies", icon: Briefcase },
+                { name: "News & Updates", icon: Bell },
+                { name: "Photo Gallery", icon: Image },
+                { name: "RTI", icon: Info },
+              ].map((item) => (
+                <li key={item.name}>
+                  <a href="#" className="flex items-center gap-3 text-sm opacity-80 hover:opacity-100 hover:text-[#facc15] transition-all group">
+                    <item.icon size={16} className="text-[#facc15] group-hover:scale-110 transition-transform" />
+                    {item.name}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
+
+          {/* Column 4: GRIEVANCE & HELP */}
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-[#facc15] font-bold text-lg mb-6 uppercase tracking-wider">Grievance & Help</h3>
+              <ul className="space-y-4">
+                {[
+                  { name: "File Complaint", icon: AlertCircle },
+                  { name: "Corporate Complaints", icon: Users },
+                  { name: "FAQs", icon: HelpCircle },
+                  { name: "Contact Us", icon: Phone },
+                  { name: "Holiday List", icon: Calendar },
+                  { name: "Admin Panel", icon: UserCog },
+                ].map((item) => (
+                  <li key={item.name}>
+                    <a href="#" className="flex items-center gap-3 text-sm opacity-80 hover:opacity-100 hover:text-[#facc15] transition-all group">
+                      <item.icon size={16} className="text-[#facc15] group-hover:scale-110 transition-transform" />
+                      {item.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
-        
-        <div className="mt-12 border-t border-slate-100 pt-8 text-center dark:border-slate-800">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            © {new Date().getFullYear()} DakShiksha. All rights reserved.
-          </p>
+
+        {/* Bottom Bar: Govt Portals */}
+        <div className="pt-8 border-t border-white/10 text-center text-[10px] opacity-40">
+          <p>© {new Date().getFullYear()} DakShiksha. All rights reserved.</p>
         </div>
       </div>
     </footer>
