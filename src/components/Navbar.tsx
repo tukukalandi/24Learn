@@ -230,10 +230,11 @@ export function Navbar() {
                   </div>
                   <div className="py-2">
                     {branches.map((branch) => {
-                      const isExternal = branch.name === 'Philately Branch' || branch.name === 'BD Branch';
+                      const isExternal = branch.name === 'Philately Branch' || branch.name === 'BD Branch' || branch.name === 'Mail Branch';
                       const externalLinks: Record<string, string> = {
                         'Philately Branch': 'https://philately.vercel.app/',
-                        'BD Branch': 'https://bd-branch-dhenkanal.vercel.app/'
+                        'BD Branch': 'https://bd-branch-dhenkanal.vercel.app/',
+                        'Mail Branch': 'https://mail-branch.vercel.app/'
                       };
                       
                       const link = branch.name === 'BD Branch' ? '/branch/bd' : 

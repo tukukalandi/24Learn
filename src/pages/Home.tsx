@@ -204,6 +204,8 @@ export function Home() {
                 onClick={() => {
                   if (branch.name === 'BD Branch') {
                     window.open('https://bd-branch-dhenkanal.vercel.app/', '_blank');
+                  } else if (branch.name === 'Mail Branch') {
+                    window.open('https://mail-branch.vercel.app/', '_blank');
                   } else if (branch.name === 'Savings Branch') {
                     navigate('/branch/savings');
                   } else if (branch.name === 'Other Branch') {
@@ -314,8 +316,8 @@ export function Home() {
               <Info size={18} /> Quick Help
             </h3>
             <ul className="space-y-3 text-sm text-slate-600">
-              <li className="flex items-center gap-2 hover:text-postal-red cursor-pointer">
-                <ChevronRight size={14} /> How to download PDFs?
+              <li className="flex items-center gap-2 hover:text-postal-red cursor-pointer" onClick={() => window.open('https://docs.google.com/spreadsheets/d/1ge75tHFQSI0vQFVsAnaVwQ7X2K6G-94fwLg0Jy0eL_4/edit?gid=0#gid=0', '_blank')}>
+                <ChevronRight size={14} /> Job specification contact details of CO
               </li>
               <li className="flex items-center gap-2 hover:text-postal-red cursor-pointer">
                 <ChevronRight size={14} /> Copyright Policy
