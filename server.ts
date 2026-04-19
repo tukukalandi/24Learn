@@ -124,11 +124,12 @@ app.post('/api/drive/upload-service', upload.single('file'), async (req, res) =>
       });
     }
 
-    const auth = new google.auth.JWT({
-      email: clientEmail,
-      key: privateKey,
-      scopes: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive']
-    });
+    const auth = new google.auth.JWT(
+      clientEmail,
+      undefined,
+      privateKey,
+      ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive']
+    );
 
     const drive = google.drive({ version: 'v3', auth });
 
@@ -157,15 +158,7 @@ app.post('/api/drive/upload-service', upload.single('file'), async (req, res) =>
     res.json({ link: response.data.webViewLink });
   } catch (error: any) {
     console.error('Service Account Drive Upload Error:', error);
-    
-    let errorMessage = error.response?.data?.error?.message || error.message || 'Failed to upload to Google Drive';
-    
-    // Explicit check for "API Disabled" error from Google for Service Account
-    if (errorMessage.includes('has not been used in project') || errorMessage.includes('is disabled')) {
-      errorMessage = `Drive Upload Error: ${errorMessage}`;
-    }
-    
-    res.status(500).json({ error: errorMessage, type: 'DRIVE_API_DISABLED' });
+    res.status(500).json({ error: error.message || 'Failed to upload to Google Drive' });
   }
 });
 
@@ -207,15 +200,8 @@ app.post('/api/drive/upload', upload.single('file'), async (req, res) => {
     });
   } catch (error: any) {
     console.error('Drive Upload Error:', error);
-    
-    // Explicit check for "API Disabled" error from Google
-    let errorMessage = error.response?.data?.error?.message || error.response?.data?.error_description || error.message || 'Failed to upload to Google Drive';
-    
-    if (errorMessage.includes('has not been used in project') || errorMessage.includes('is disabled')) {
-      errorMessage = `Drive Upload Error: ${errorMessage}`;
-    }
-    
-    res.status(500).json({ error: errorMessage, type: 'DRIVE_API_DISABLED' });
+    const errorMessage = error.response?.data?.error_description || error.message || 'Failed to upload to Google Drive';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
