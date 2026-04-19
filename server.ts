@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import multer from 'multer';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import cookieSession from 'cookie-session';
 import { google } from 'googleapis';
 import { Readable } from 'stream';
 
@@ -27,6 +28,13 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieSession({
+  name: 'google-drive-session',
+  keys: [process.env.SESSION_SECRET || 'dakshiksha-secret-123'],
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  secure: true,
+  sameSite: 'none'
+}));
 
 // Helper to clean Folder IDs from extra junk (URLs, spaces, quotes)
 const sanitizeId = (id: string | undefined): string => {
@@ -43,17 +51,58 @@ const sanitizeId = (id: string | undefined): string => {
 // Google Drive Service Account Setup
 const driveFolderId = sanitizeId(process.env.GOOGLE_DRIVE_FOLDER_ID || '1paMc3Olh8yEEsnOQ8cRosKSrGuiY7tVo');
 
-const getDriveService = () => {
-  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-  // Handle literal \n strings which often happen when pasting into env editors
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n').replace(/^['"]|['"]$/g, '');
+// Aggressive sanitization for credentials (handles accidental JSON pasting or prefixes)
+const sanitizeCredential = (val: string | undefined, keyName: string): string => {
+  if (!val) return '';
+  let clean = val.trim();
+  
+  // If user pasted a JSON line like '"client_email": "abc@def.com"', extract the value
+  if (clean.includes(':') && (clean.includes('"') || clean.includes("'"))) {
+    const parts = clean.split(':');
+    if (parts.length > 1) {
+      clean = parts[1].trim();
+    }
+  }
+  
+  // Remove surrounding quotes
+  clean = clean.replace(/^['"]|['"]$/g, '');
+  
+  // For private keys, handle literal \n sequences and fix formatting
+  if (keyName === 'private_key') {
+    clean = clean.replace(/\\n/g, '\n');
+    // Ensure it starts/ends correctly if it looks like a key
+    if (clean.includes('PRIVATE KEY')) {
+      if (!clean.startsWith('-----BEGIN')) {
+         clean = `-----BEGIN PRIVATE KEY-----\n${clean}`;
+      }
+      if (!clean.endsWith('-----')) {
+         clean = `${clean}\n-----END PRIVATE KEY-----`;
+      }
+    }
+  }
+  
+  return clean.trim();
+};
 
-  const auth = new google.auth.JWT({
-    email: clientEmail,
-    key: privateKey,
-    scopes: ['https://www.googleapis.com/auth/drive.file']
-  });
-  return google.drive({ version: 'v3', auth });
+const getDriveService = () => {
+  const clientEmail = sanitizeCredential(process.env.GOOGLE_CLIENT_EMAIL, 'email');
+  const privateKey = sanitizeCredential(process.env.GOOGLE_PRIVATE_KEY, 'private_key');
+
+  if (clientEmail) {
+    console.log(`[Drive Service] Attempting auth for: ${clientEmail}`);
+  }
+
+  try {
+    const auth = new google.auth.JWT({
+      email: clientEmail,
+      key: privateKey,
+      scopes: ['https://www.googleapis.com/auth/drive.file']
+    });
+    return google.drive({ version: 'v3', auth });
+  } catch (err: any) {
+    console.error('[Drive Service Error]: Failed to decode Service Account Key.', err.message);
+    throw new Error('CORRUPT_KEY');
+  }
 };
 
 // Upload Endpoint for Service Account
@@ -128,11 +177,86 @@ app.get('/api/auth/google/url', (req, res) => {
 });
 
 app.get('/api/auth/google/status', (req, res) => {
+  let driveConfigured = false;
+  try {
+    const email = sanitizeCredential(process.env.GOOGLE_CLIENT_EMAIL, 'email');
+    const key = sanitizeCredential(process.env.GOOGLE_PRIVATE_KEY, 'private_key');
+    if (email && key) {
+      // Test if JWT even initializes
+      new google.auth.JWT({ email, key, scopes: [] });
+      driveConfigured = true;
+    }
+  } catch (e) {
+    driveConfigured = false;
+  }
+
   res.json({
-    configured: !!(process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY),
+    configured: driveConfigured,
+    manualConnected: !!(req.session && req.session.tokens),
     serviceAccountEmail: process.env.GOOGLE_CLIENT_EMAIL,
     folderId: process.env.GOOGLE_DRIVE_FOLDER_ID || '1paMc3Olh8yEEsnOQ8cRosKSrGuiY7tVo'
   });
+});
+
+app.get('/auth/callback', async (req, res) => {
+  const { code } = req.query;
+  try {
+    const { tokens } = await oauth2Client.getToken(code as string);
+    if (req.session) {
+      req.session.tokens = tokens;
+    }
+    res.send('<script>window.close();</script>');
+  } catch (error) {
+    console.error('OAuth Callback Error:', error);
+    res.status(500).send('Authentication failed');
+  }
+});
+
+app.post('/api/auth/google/logout', (req, res) => {
+  if (req.session) {
+    req.session.tokens = null;
+  }
+  res.json({ success: true });
+});
+
+// Manual Upload Endpoint
+app.post('/api/drive/upload-manual', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.session || !req.session.tokens) {
+      return res.status(401).json({ error: 'Manual Drive not connected' });
+    }
+    if (!req.file) return res.status(400).json({ error: 'No file provided' });
+
+    oauth2Client.setCredentials(req.session.tokens);
+    const drive = google.drive({ version: 'v3', auth: oauth2Client });
+
+    const fileMetadata = {
+      name: req.file.originalname,
+      parents: [driveFolderId]
+    };
+
+    const media = {
+      mimeType: req.file.mimetype,
+      body: Readable.from(req.file.buffer)
+    };
+
+    const response = await drive.files.create({
+      requestBody: fileMetadata,
+      media: media,
+      fields: 'id, webViewLink'
+    });
+
+    // Share publicly
+    await drive.permissions.create({
+      fileId: response.data.id!,
+      requestBody: { role: 'reader', type: 'anyone' }
+    });
+
+    res.json({ id: response.data.id, link: response.data.webViewLink });
+  } catch (error: any) {
+    console.error('Manual Drive Upload Error:', error);
+    res.status(500).json({ error: error.message || 'Failed to upload to manual Drive' });
+  }
 });
 
 // Final Error Handler

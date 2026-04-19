@@ -43,7 +43,12 @@ export function InternalPortal() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingDoc, setEditingDoc] = useState<PortalDoc | null>(null);
-  const [driveStatus, setDriveStatus] = useState({ configured: false, serviceAccountEmail: '', folderId: '' });
+  const [driveStatus, setDriveStatus] = useState({ 
+    configured: false, 
+    manualConnected: false,
+    serviceAccountEmail: '', 
+    folderId: '' 
+  });
   
   const [formData, setFormData] = useState({
     category: CATEGORIES[0],
@@ -55,6 +60,35 @@ export function InternalPortal() {
 
   const [file, setFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+
+  const handleConnectDrive = async () => {
+    try {
+      const res = await fetch('/api/auth/google/url');
+      const { url } = await res.json();
+      const width = 600, height = 700;
+      const left = window.innerWidth / 2 - width / 2;
+      const top = window.innerHeight / 2 - height / 2;
+      window.open(url, 'google-drive-auth', `width=${width},height=${height},top=${top},left=${left}`);
+      
+      // Poll for status change
+      const pollTimer = setInterval(async () => {
+        const statusRes = await fetch('/api/auth/google/status');
+        const data = await statusRes.json();
+        if (data.manualConnected) {
+          setDriveStatus(data);
+          clearInterval(pollTimer);
+        }
+      }, 2000);
+      setTimeout(() => clearInterval(pollTimer), 120000); // Stop after 2 mins
+    } catch (e) {
+      console.error('Failed to start OAuth:', e);
+    }
+  };
+
+  const handleLogoutDrive = async () => {
+    await fetch('/api/auth/google/logout', { method: 'POST' });
+    setDriveStatus(prev => ({ ...prev, manualConnected: false }));
+  };
 
   const [editFormData, setEditFormData] = useState({
     subType: '',
@@ -206,7 +240,10 @@ export function InternalPortal() {
         
         let uploadRes;
         try {
-          uploadRes = await fetch('/api/drive/upload-service', {
+          // Determine which endpoint to use: Service Account (configured) or Manual (manualConnected)
+          const endpoint = driveStatus.configured ? '/api/drive/upload-service' : '/api/drive/upload-manual';
+          
+          uploadRes = await fetch(endpoint, {
             method: 'POST',
             body: uploadFormData
           });
@@ -276,11 +313,19 @@ export function InternalPortal() {
             <div className="flex items-center gap-4">
               <div className={cn(
                 "px-3 py-1 text-[10px] font-mono font-black border-2 border-black flex items-center gap-2",
-                driveStatus.configured ? "bg-emerald-400 text-black shadow-[2px_2px_0px_#000]" : "bg-white text-black opacity-40"
+                (driveStatus.configured || driveStatus.manualConnected) ? "bg-emerald-400 text-black shadow-[2px_2px_0px_#000]" : "bg-white text-black opacity-40"
               )}>
-                <div className={cn("w-2 h-2 rounded-full", driveStatus.configured ? "bg-black animate-pulse" : "bg-black/20")} />
-                Drive Automator: {driveStatus.configured ? "ACTIVE" : "INACTIVE"}
+                <div className={cn("w-2 h-2 rounded-full", (driveStatus.configured || driveStatus.manualConnected) ? "bg-black animate-pulse" : "bg-black/20")} />
+                Drive Automator: {(driveStatus.configured || driveStatus.manualConnected) ? "ACTIVE" : "INACTIVE"}
               </div>
+              {driveStatus.manualConnected && (
+                <button 
+                  onClick={handleLogoutDrive}
+                  className="px-3 py-1 text-[10px] font-mono font-black border-2 border-black bg-white text-black hover:bg-black hover:text-white transition-all shadow-[2px_2px_0px_#000]"
+                >
+                  Disconnect Manual Drive
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -408,20 +453,63 @@ export function InternalPortal() {
                         )}
                       </div>
                     </div>
-                    {driveStatus.configured ? (
-                      <p className="text-[8px] font-mono text-emerald-600 font-bold mt-1 uppercase tracking-tighter">
-                        Connected to: {driveStatus.serviceAccountEmail} // Root: ...{driveStatus.folderId.slice(-6)}
-                      </p>
-                    ) : (
-                      <div className="mt-2 p-2 bg-red-50 border border-red-200">
-                        <p className="text-[8px] font-mono text-postal-red font-bold uppercase tracking-tighter flex items-center gap-1">
-                          <AlertCircle size={8} /> Drive Not Configured
-                        </p>
-                        <p className="text-[7px] font-mono text-slate-500 mt-1 uppercase leading-tight">
-                          Please add <code className="bg-white px-1">GOOGLE_CLIENT_EMAIL</code> and <code className="bg-white px-1">GOOGLE_PRIVATE_KEY</code> to the <span className="font-bold text-black">Settings &gt; Environment Variables</span> menu and <span className="font-bold text-black whitespace-nowrap">Restart Dev Server</span>.
-                        </p>
-                      </div>
-                    )}
+                    {/* Connection Status Section */}
+                    <div className="mt-2 space-y-2">
+                      {driveStatus.configured && (
+                        <div className={cn(
+                          "p-2 border-2 border-black flex items-center justify-between gap-2",
+                          driveStatus.configured ? "bg-emerald-50 text-emerald-700" : "bg-slate-50 opacity-50"
+                        )}>
+                          <div className="flex items-center gap-2">
+                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                             <span className="text-[8px] font-mono font-bold uppercase">Automated (Service Account) Active</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {driveStatus.manualConnected ? (
+                        <div className="p-2 border-2 border-black bg-emerald-50 text-emerald-700 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                             <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                             <span className="text-[8px] font-mono font-bold uppercase">Manual Connection Active</span>
+                          </div>
+                          <button 
+                            type="button"
+                            onClick={handleLogoutDrive}
+                            className="text-[7px] font-bold uppercase underline hover:text-postal-red"
+                          >
+                            Disconnect
+                          </button>
+                        </div>
+                      ) : !driveStatus.configured && (
+                        <div className="p-3 bg-red-50 border-2 border-black">
+                          <p className="text-[8px] font-mono text-postal-red font-bold uppercase tracking-tighter flex items-center gap-1">
+                            <AlertCircle size={8} /> No Drive Connection
+                          </p>
+                          <p className="text-[7px] font-mono text-slate-500 mt-1 uppercase leading-tight mb-3">
+                            Connect your personal drive to enable file uploads or add Service Account keys in Settings.
+                          </p>
+                          <button 
+                            type="button"
+                            onClick={handleConnectDrive}
+                            className="w-full bg-postal-red text-white py-2 px-4 font-mono text-[10px] font-black uppercase tracking-widest border-2 border-black shadow-[2px_2px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center justify-center gap-2"
+                          >
+                            <ExternalLink size={12} /> Connect My Google Drive
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Fallback button if Service Account is failing but present */}
+                      {driveStatus.configured && !driveStatus.manualConnected && (
+                        <button 
+                          type="button"
+                          onClick={handleConnectDrive}
+                          className="w-full bg-slate-900 text-white py-2 px-4 font-mono text-[9px] font-black uppercase tracking-widest border-2 border-black hover:bg-black transition-all flex items-center justify-center gap-2"
+                        >
+                          <ExternalLink size={10} /> Use Manual Connection Instead
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -437,10 +525,10 @@ export function InternalPortal() {
 
               <button
                 type="submit"
-                disabled={loading || (!!file && !driveStatus.configured)}
+                disabled={loading || (!!file && !driveStatus.configured && !driveStatus.manualConnected)}
                 className="w-full bg-[#141414] text-[#E4E3E0] py-3 px-6 font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#E4E3E0] hover:text-[#141414] border border-[#141414] transition-all disabled:opacity-50 group"
               >
-                {loading ? 'Processing...' : (!!file && !driveStatus.configured ? 'Config Required to Upload' : (
+                {loading ? 'Processing...' : (!!file && !driveStatus.configured && !driveStatus.manualConnected ? 'Connect Drive to Upload' : (
                   <>
                     <Save size={16} className="group-hover:scale-110 transition-transform" />
                     Save & Upload
