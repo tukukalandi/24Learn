@@ -23,6 +23,9 @@ const port = 3000;
 // Important: Trust proxy is required for secure cookies behind Nginx
 app.set('trust proxy', 1);
 
+const isVercel = process.env.VERCEL === '1';
+const isProd = process.env.NODE_ENV === 'production';
+
 // Multer for file uploads
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -205,9 +208,9 @@ app.post('/api/drive/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-// Vite Middleware
+// Vite Middleware / Static Files
 async function setupVite() {
-  if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
+  if (!isProd && !isVercel) {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -216,29 +219,37 @@ async function setupVite() {
     app.use(vite.middlewares);
   } else {
     // Vercel / Production Path
-    const distPath = path.join(process.cwd(), 'dist');
-    console.log('[Server] Static Path:', distPath);
+    // On Vercel, assets are usually in the same directory as the function or predictable
+    const possiblePaths = [
+      path.join(process.cwd(), 'dist'),
+      path.join(__dirname, 'dist'),
+      path.resolve(process.cwd(), 'app/applet/dist'),
+      path.resolve(process.cwd(), '.next/server/chunks/dist') // Some Vercel internals
+    ];
     
+    let distPath = possiblePaths[0];
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) {
+        distPath = p;
+        break;
+      }
+    }
+    
+    console.log('[Server] Static Assets Root:', distPath);
     app.use(express.static(distPath));
     
-    // Fallback for SPA
     app.get('*', (req, res) => {
       const indexPath = path.join(distPath, 'index.html');
       if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath);
       } else {
-        // Emergency fallback if Vercel path is different
-        const fallbackPath = path.resolve(__dirname, 'dist', 'index.html');
-        if (fs.existsSync(fallbackPath)) {
-          res.sendFile(fallbackPath);
-        } else {
-          res.status(404).send(`Application Error: build files not found at ${indexPath} or ${fallbackPath}`);
-        }
+        res.status(404).send(`Application Error: build files not found. Please ensure "npm run build" completed.`);
       }
     });
   }
 
-  if (process.env.NODE_ENV !== 'production' || process.env.VITE_DEV === 'true') {
+  // Only listen if not on Vercel
+  if (!isVercel && (isProd || process.env.VITE_DEV === 'true')) {
     app.listen(port, '0.0.0.0', () => {
       console.log(`Server running at http://0.0.0.0:${port}`);
     });
