@@ -43,12 +43,6 @@ export function InternalPortal() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingDoc, setEditingDoc] = useState<PortalDoc | null>(null);
-  const [driveStatus, setDriveStatus] = useState({ 
-    configured: false, 
-    manualConnected: false,
-    serviceAccountEmail: '', 
-    folderId: '' 
-  });
   
   const [formData, setFormData] = useState({
     category: CATEGORIES[0],
@@ -58,62 +52,12 @@ export function InternalPortal() {
     link: ''
   });
 
-  const [file, setFile] = useState<File | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
-
-  const handleConnectDrive = async () => {
-    try {
-      const res = await fetch('/api/auth/google/url');
-      const { url } = await res.json();
-      const width = 600, height = 700;
-      const left = window.innerWidth / 2 - width / 2;
-      const top = window.innerHeight / 2 - height / 2;
-      window.open(url, 'google-drive-auth', `width=${width},height=${height},top=${top},left=${left}`);
-      
-      // Poll for status change
-      const pollTimer = setInterval(async () => {
-        const statusRes = await fetch('/api/auth/google/status');
-        const data = await statusRes.json();
-        if (data.manualConnected) {
-          setDriveStatus(data);
-          clearInterval(pollTimer);
-        }
-      }, 2000);
-      setTimeout(() => clearInterval(pollTimer), 120000); // Stop after 2 mins
-    } catch (e) {
-      console.error('Failed to start OAuth:', e);
-    }
-  };
-
-  const handleLogoutDrive = async () => {
-    await fetch('/api/auth/google/logout', { method: 'POST' });
-    setDriveStatus(prev => ({ ...prev, manualConnected: false }));
-  };
-
   const [editFormData, setEditFormData] = useState({
     subType: '',
     name: '',
     description: '',
     link: ''
   });
-
-  useEffect(() => {
-    const checkDriveStatus = async () => {
-      try {
-        const res = await fetch('/api/auth/google/status');
-        if (res.ok) {
-          const data = await res.json();
-          setDriveStatus(data);
-        }
-      } catch (e) {
-        console.error('Failed to check drive status:', e);
-      }
-    };
-    checkDriveStatus();
-    // Re-check periodically
-    const timer = setInterval(checkDriveStatus, 60000);
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     if (editingDoc) {
@@ -222,8 +166,8 @@ export function InternalPortal() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.subType || !formData.name || (!formData.link && !file)) {
-      setMessage({ type: 'error', text: 'Please provide a document name, sub-type, and either a link or a file.' });
+    if (!formData.subType || !formData.name || !formData.link) {
+      setMessage({ type: 'error', text: 'Please provide a document name, sub-type, and a link.' });
       return;
     }
 
@@ -231,53 +175,14 @@ export function InternalPortal() {
     setMessage(null);
 
     try {
-      let finalLink = formData.link;
-
-      if (file) {
-        // Upload to Google Drive via Server
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', file);
-        
-        let uploadRes;
-        try {
-          // Determine which endpoint to use: Service Account (configured) or Manual (manualConnected)
-          const endpoint = driveStatus.configured ? '/api/drive/upload-service' : '/api/drive/upload-manual';
-          
-          uploadRes = await fetch(endpoint, {
-            method: 'POST',
-            body: uploadFormData
-          });
-        } catch (fetchErr: any) {
-          throw new Error('Connection error: Could not reach the upload server. If you just added environment variables, please restart the dev server.');
-        }
-
-        if (!uploadRes.ok) {
-          let errorMessage = 'Failed to upload to Google Drive';
-          try {
-            const errorData = await uploadRes.json();
-            errorMessage = errorData.error || errorMessage;
-          } catch (e) {
-            // If not JSON, try to get text
-            const text = await uploadRes.text().catch(() => '');
-            if (text.includes('404')) errorMessage = 'Upload endpoint not found (404). Please ensure the server is running correctly.';
-          }
-          throw new Error(errorMessage);
-        }
-
-        const driveData = await uploadRes.json();
-        finalLink = driveData.link;
-      }
-
       await addDoc(collection(db, 'portal_documents'), {
         ...formData,
-        link: finalLink,
         createdBy: user?.uid,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
 
       setMessage({ type: 'success', text: 'Document record created successfully!' });
-      setFile(null);
       setFormData({
         ...formData,
         name: '',
@@ -310,23 +215,6 @@ export function InternalPortal() {
             <p className="font-mono text-sm uppercase tracking-widest text-yellow-400 font-bold">
               Department of Posts // DakShiksha Administrator
             </p>
-            <div className="flex items-center gap-4">
-              <div className={cn(
-                "px-3 py-1 text-[10px] font-mono font-black border-2 border-black flex items-center gap-2",
-                (driveStatus.configured || driveStatus.manualConnected) ? "bg-emerald-400 text-black shadow-[2px_2px_0px_#000]" : "bg-white text-black opacity-40"
-              )}>
-                <div className={cn("w-2 h-2 rounded-full", (driveStatus.configured || driveStatus.manualConnected) ? "bg-black animate-pulse" : "bg-black/20")} />
-                Drive Automator: {(driveStatus.configured || driveStatus.manualConnected) ? "ACTIVE" : "INACTIVE"}
-              </div>
-              {driveStatus.manualConnected && (
-                <button 
-                  onClick={handleLogoutDrive}
-                  className="px-3 py-1 text-[10px] font-mono font-black border-2 border-black bg-white text-black hover:bg-black hover:text-white transition-all shadow-[2px_2px_0px_#000]"
-                >
-                  Disconnect Manual Drive
-                </button>
-              )}
-            </div>
           </div>
         </div>
 
@@ -417,99 +305,7 @@ export function InternalPortal() {
                       value={formData.link}
                       onChange={(e) => setFormData({ ...formData, link: e.target.value })}
                       className="w-full bg-[#E4E3E0] border border-[#141414] p-3 font-mono text-xs focus:outline-none focus:bg-white transition-colors"
-                      disabled={!!file}
                     />
-                  </div>
-
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-[#141414]/20 border-dashed"></div>
-                    </div>
-                    <div className="relative flex justify-center text-[8px] font-mono uppercase tracking-widest text-[#141414]/40">
-                      <span className="bg-white px-2 italic">OR UPLOAD DIRECTLY</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-mono italic uppercase opacity-50 tracking-wider flex items-center gap-1">
-                      <FileText size={10} /> Option 2: Upload File (PDF, DOC, Excel, CSV)
-                    </label>
-                    <div className="relative group">
-                      <input
-                        type="file"
-                        accept=".pdf,.doc,.docx,.xls,.xlsx,.csv"
-                        onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
-                        className="w-full bg-slate-50 border-2 border-dashed border-black p-6 font-mono text-[10px] focus:outline-none cursor-pointer hover:bg-yellow-50 transition-colors"
-                        disabled={formData.link !== ''}
-                      />
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                        {file ? (
-                          <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-2 py-1 border border-emerald-200">
-                             <CheckCircle2 size={12} />
-                             <span className="text-[8px] font-bold">{file.name}</span>
-                          </div>
-                        ) : (
-                          <Plus size={16} className="text-black/20" />
-                        )}
-                      </div>
-                    </div>
-                    {/* Connection Status Section */}
-                    <div className="mt-2 space-y-2">
-                      {driveStatus.configured && (
-                        <div className={cn(
-                          "p-2 border-2 border-black flex items-center justify-between gap-2",
-                          driveStatus.configured ? "bg-emerald-50 text-emerald-700" : "bg-slate-50 opacity-50"
-                        )}>
-                          <div className="flex items-center gap-2">
-                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                             <span className="text-[8px] font-mono font-bold uppercase">Automated (Service Account) Active</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {driveStatus.manualConnected ? (
-                        <div className="p-2 border-2 border-black bg-emerald-50 text-emerald-700 flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                             <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                             <span className="text-[8px] font-mono font-bold uppercase">Manual Connection Active</span>
-                          </div>
-                          <button 
-                            type="button"
-                            onClick={handleLogoutDrive}
-                            className="text-[7px] font-bold uppercase underline hover:text-postal-red"
-                          >
-                            Disconnect
-                          </button>
-                        </div>
-                      ) : !driveStatus.configured && (
-                        <div className="p-3 bg-red-50 border-2 border-black">
-                          <p className="text-[8px] font-mono text-postal-red font-bold uppercase tracking-tighter flex items-center gap-1">
-                            <AlertCircle size={8} /> No Drive Connection
-                          </p>
-                          <p className="text-[7px] font-mono text-slate-500 mt-1 uppercase leading-tight mb-3">
-                            Connect your personal drive to enable file uploads or add Service Account keys in Settings.
-                          </p>
-                          <button 
-                            type="button"
-                            onClick={handleConnectDrive}
-                            className="w-full bg-postal-red text-white py-2 px-4 font-mono text-[10px] font-black uppercase tracking-widest border-2 border-black shadow-[2px_2px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center justify-center gap-2"
-                          >
-                            <ExternalLink size={12} /> Connect My Google Drive
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Fallback button if Service Account is failing but present */}
-                      {driveStatus.configured && !driveStatus.manualConnected && (
-                        <button 
-                          type="button"
-                          onClick={handleConnectDrive}
-                          className="w-full bg-slate-900 text-white py-2 px-4 font-mono text-[9px] font-black uppercase tracking-widest border-2 border-black hover:bg-black transition-all flex items-center justify-center gap-2"
-                        >
-                          <ExternalLink size={10} /> Use Manual Connection Instead
-                        </button>
-                      )}
-                    </div>
                   </div>
                 </div>
               </div>
@@ -525,15 +321,15 @@ export function InternalPortal() {
 
               <button
                 type="submit"
-                disabled={loading || (!!file && !driveStatus.configured && !driveStatus.manualConnected)}
+                disabled={loading}
                 className="w-full bg-[#141414] text-[#E4E3E0] py-3 px-6 font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#E4E3E0] hover:text-[#141414] border border-[#141414] transition-all disabled:opacity-50 group"
               >
-                {loading ? 'Processing...' : (!!file && !driveStatus.configured && !driveStatus.manualConnected ? 'Connect Drive to Upload' : (
+                {loading ? 'Processing...' : (
                   <>
                     <Save size={16} className="group-hover:scale-110 transition-transform" />
-                    Save & Upload
+                    Save Record
                   </>
-                ))}
+                )}
               </button>
             </form>
           </motion.div>

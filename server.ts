@@ -60,7 +60,11 @@ const sanitizeCredential = (val: string | undefined, keyName: string): string =>
   if (clean.includes(':') && (clean.includes('"') || clean.includes("'"))) {
     const parts = clean.split(':');
     if (parts.length > 1) {
-      clean = parts[1].trim();
+      // Check if it's the right part by looking at the key before the colon
+      const keyPrefix = parts[0].toLowerCase();
+      if (keyPrefix.includes('email') || keyPrefix.includes('private_key')) {
+        clean = parts.slice(1).join(':').trim();
+      }
     }
   }
   
@@ -69,15 +73,38 @@ const sanitizeCredential = (val: string | undefined, keyName: string): string =>
   
   // For private keys, handle literal \n sequences and fix formatting
   if (keyName === 'private_key') {
+    // 1. Convert literal \n sequences to real newlines
     clean = clean.replace(/\\n/g, '\n');
-    // Ensure it starts/ends correctly if it looks like a key
-    if (clean.includes('PRIVATE KEY')) {
-      if (!clean.startsWith('-----BEGIN')) {
-         clean = `-----BEGIN PRIVATE KEY-----\n${clean}`;
+    
+    // 2. Remove all spaces that might have been accidentally added during copy-paste
+    // (But keep the newlines!)
+    
+    // 3. Ensure the PEM format is clean (no extra text outside markers)
+    const header = "-----BEGIN PRIVATE KEY-----";
+    const footer = "-----END PRIVATE KEY-----";
+    
+    if (clean.includes(header) && clean.includes(footer)) {
+      const startIndex = clean.indexOf(header);
+      const endIndex = clean.indexOf(footer) + footer.length;
+      
+      // Extract just the part between and inclusive of headers
+      let keyPart = clean.substring(startIndex, endIndex);
+      
+      // Remove any extra text from the lines (like "private_key": or quotes)
+      const lines = keyPart.split('\n').map(l => l.trim()).filter(Boolean);
+      
+      // Rebuild carefully
+      if (lines.length > 2) {
+        const top = lines[0]; // Header
+        const bottom = lines[lines.length - 1]; // Footer
+        const middle = lines.slice(1, -1).join('\n');
+        clean = `${top}\n${middle}\n${bottom}`;
+      } else {
+        clean = lines.join('\n');
       }
-      if (!clean.endsWith('-----')) {
-         clean = `${clean}\n-----END PRIVATE KEY-----`;
-      }
+    } else if (clean.length > 100) {
+      // If headers are missing but it looks like a long b64 string, wrap it
+      clean = `${header}\n${clean}\n${footer}`;
     }
   }
   
@@ -178,22 +205,29 @@ app.get('/api/auth/google/url', (req, res) => {
 
 app.get('/api/auth/google/status', (req, res) => {
   let driveConfigured = false;
+  let serviceEmail = 'NOT CONFIGURED';
+  
   try {
     const email = sanitizeCredential(process.env.GOOGLE_CLIENT_EMAIL, 'email');
     const key = sanitizeCredential(process.env.GOOGLE_PRIVATE_KEY, 'private_key');
-    if (email && key) {
-      // Test if JWT even initializes
-      new google.auth.JWT({ email, key, scopes: [] });
-      driveConfigured = true;
+    
+    if (email && key && key.length > 50) {
+      serviceEmail = email;
+      // Real check: If it's malformed, JWT throws even on initialization sometimes, 
+      // but definitely on signing. We use a light check here.
+      if (key.includes('BEGIN PRIVATE KEY') && key.includes('END PRIVATE KEY')) {
+         driveConfigured = true;
+      }
     }
   } catch (e) {
+    console.warn('[Status Check] Drive configuration appears corrupt.');
     driveConfigured = false;
   }
 
   res.json({
     configured: driveConfigured,
     manualConnected: !!(req.session && req.session.tokens),
-    serviceAccountEmail: process.env.GOOGLE_CLIENT_EMAIL,
+    serviceAccountEmail: serviceEmail,
     folderId: process.env.GOOGLE_DRIVE_FOLDER_ID || '1paMc3Olh8yEEsnOQ8cRosKSrGuiY7tVo'
   });
 });
@@ -205,7 +239,24 @@ app.get('/auth/callback', async (req, res) => {
     if (req.session) {
       req.session.tokens = tokens;
     }
-    res.send('<script>window.close();</script>');
+    // Send success message to parent window and close popup
+    res.send(`
+      <html>
+        <body>
+          <script>
+            if (window.opener) {
+              window.opener.postMessage({ type: 'OAUTH_AUTH_SUCCESS' }, '*');
+              window.close();
+            } else {
+              window.location.href = '/internal-portal';
+            }
+          </script>
+          <p style="font-family: monospace; text-align: center; margin-top: 50px;">
+            Drive connected! This window will close automatically.
+          </p>
+        </body>
+      </html>
+    `);
   } catch (error) {
     console.error('OAuth Callback Error:', error);
     res.status(500).send('Authentication failed');
