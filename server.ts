@@ -39,10 +39,19 @@ app.use(cookieSession({
 }));
 
 // Google OAuth Setup
-const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${process.env.APP_URL || 'http://localhost:3000'}/auth/callback`;
+const sanitizeUrl = (url: string | undefined) => {
+  if (!url) return '';
+  // Remove "URL " prefix if accidentally added, trim spaces and trailing slashes
+  return url.replace(/^URL\s+/i, '').trim().replace(/\/+$/, '');
+};
+
+const rawAppUrl = process.env.APP_URL || 'http://localhost:3000';
+const sanitizedAppUrl = sanitizeUrl(rawAppUrl);
+const redirectUri = sanitizeUrl(process.env.GOOGLE_REDIRECT_URI) || `${sanitizedAppUrl}/auth/callback`;
 
 console.log('--- Google OAuth Init ---');
 console.log('Client ID:', process.env.GOOGLE_CLIENT_ID ? 'Present' : 'MISSING');
+console.log('App URL:', sanitizedAppUrl);
 console.log('Redirect URI:', redirectUri);
 console.log('-------------------------');
 
