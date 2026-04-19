@@ -15,6 +15,7 @@ const app = express();
 
 const port = 3000;
 app.set('trust proxy', 1);
+app.set('strict routing', false); // Handle trailing slashes more flexibly
 
 const isVercel = process.env.VERCEL === '1';
 const isProd = process.env.NODE_ENV === 'production';
