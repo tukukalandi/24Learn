@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../firebase';
+import { db, storage } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -175,6 +176,13 @@ export function InternalPortal() {
       return;
     }
 
+    if (file && file.size > 4.5 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'File is too large! Maximum limit is 4.5MB for server uploads. Please use an external link instead for larger files.' });
+      setLoading(false);
+      setIsUploading(false);
+      return;
+    }
+
     setLoading(true);
     setIsUploading(true);
     setMessage(null);
@@ -183,22 +191,23 @@ export function InternalPortal() {
       let finalLink = formData.link;
 
       if (file) {
-        // Upload to Google Drive via Server (Service Account)
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', file);
-        
-        const res = await fetch('/api/drive/upload-service', {
-          method: 'POST',
-          body: uploadFormData
+        // Upload to Firebase Storage
+        const fileRef = ref(storage, `portal/${Date.now()}_${file.name}`);
+        const uploadTask = uploadBytesResumable(fileRef, file);
+
+        finalLink = await new Promise((resolve, reject) => {
+          uploadTask.on('state_changed', 
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress(progress);
+            }, 
+            (error) => reject(error), 
+            async () => {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(downloadURL);
+            }
+          );
         });
-        
-        const data = await res.json();
-        
-        if (!res.ok) {
-          throw new Error(data.error || 'Server upload failed');
-        }
-        
-        finalLink = data.link;
       }
 
       await addDoc(collection(db, 'portal_documents'), {
