@@ -6,9 +6,22 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   FileText, ExternalLink, ChevronRight, 
   ArrowLeft, Search, Filter, BookOpen,
-  Download, Clock, Tag, LayoutPanelLeft
+  Download, Clock, Tag, LayoutPanelLeft,
+  FileBadge, FileJson, FileType
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+
+// Helper to determine file type from URL
+function getFileTypeInfo(url: string) {
+  const extension = url.split(/[#?]/)[0].split('.').pop()?.toLowerCase();
+  
+  if (extension === 'pdf') return { label: 'PDF DOCUMENT', color: 'text-red-600', bgColor: 'bg-red-50' };
+  if (['doc', 'docx'].includes(extension || '')) return { label: 'WORD DOC', color: 'text-blue-600', bgColor: 'bg-blue-50' };
+  if (['xls', 'xlsx', 'csv'].includes(extension || '')) return { label: 'SPREADSHEET', color: 'text-emerald-600', bgColor: 'bg-emerald-50' };
+  if (url.includes('drive.google.com')) return { label: 'GOOGLE DRIVE', color: 'text-indigo-600', bgColor: 'bg-indigo-50' };
+  
+  return { label: 'RESOURCE FILE', color: 'text-postal-red', bgColor: 'bg-postal-red/5' };
+}
 
 interface PortalDoc {
   id: string;
@@ -169,58 +182,66 @@ export function PublicPortal() {
               </motion.div>
             ) : (
               // Documents List for Selected Sub-Type
-              <motion.div 
+               <motion.div 
                 key="documents"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               >
-                {groupedDocs[selectedSubType]?.map((doc) => (
-                  <div
-                    key={doc.id}
-                    className="bg-white rounded-2xl p-6 border border-slate-200 hover:border-postal-red hover:shadow-xl transition-all h-full flex flex-col group"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="p-3 bg-slate-50 rounded-xl text-postal-red">
-                        <FileText size={24} />
+                {groupedDocs[selectedSubType]?.map((doc) => {
+                  const typeInfo = getFileTypeInfo(doc.link);
+                  return (
+                    <div
+                      key={doc.id}
+                      className="bg-white rounded-2xl p-6 border border-slate-200 hover:border-postal-red hover:shadow-xl transition-all h-full flex flex-col group"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={cn("p-3 rounded-xl", typeInfo.bgColor, typeInfo.color)}>
+                          <FileText size={24} />
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <span className={cn("text-[8px] font-black uppercase tracking-tighter px-1.5 py-0.5 border rounded-sm", typeInfo.color, "border-current")}>
+                            {typeInfo.label}
+                          </span>
+                          <a 
+                            href={doc.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 text-slate-400 hover:text-postal-red transition-colors"
+                          >
+                            <ExternalLink size={20} />
+                          </a>
+                        </div>
                       </div>
-                      <a 
-                        href={doc.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 text-slate-400 hover:text-postal-red transition-colors"
-                      >
-                        <ExternalLink size={20} />
-                      </a>
-                    </div>
 
-                    <h3 className="text-lg font-bold text-slate-900 mb-2 leading-tight">
-                      {doc.name}
-                    </h3>
-                    
-                    {doc.description && (
-                      <p className="text-slate-600 text-sm mb-6 line-clamp-3 italic">
-                        {doc.description}
-                      </p>
-                    )}
+                      <h3 className="text-lg font-bold text-slate-900 mb-2 leading-tight">
+                        {doc.name}
+                      </h3>
+                      
+                      {doc.description && (
+                        <p className="text-slate-600 text-sm mb-6 line-clamp-3 italic">
+                          {doc.description}
+                        </p>
+                      )}
 
-                    <div className="mt-auto pt-6 border-t border-slate-100 flex items-center justify-between">
-                      <div className="flex items-center text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-                        <Clock size={12} className="mr-1" />
-                        {doc.createdAt?.toDate().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                      <div className="mt-auto pt-6 border-t border-slate-100 flex items-center justify-between">
+                        <div className="flex items-center text-[10px] text-slate-400 uppercase tracking-widest font-bold">
+                          <Clock size={12} className="mr-1" />
+                          {doc.createdAt?.toDate().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                        </div>
+                        <a 
+                          href={doc.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-bold text-postal-red hover:underline flex items-center gap-1"
+                        >
+                          DOWNLOAD <Download size={14} />
+                        </a>
                       </div>
-                      <a 
-                        href={doc.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs font-bold text-postal-red hover:underline flex items-center gap-1"
-                      >
-                        VIEW FILE <ChevronRight size={14} />
-                      </a>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </motion.div>
             )}
           </AnimatePresence>
