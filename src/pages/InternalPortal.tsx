@@ -204,14 +204,27 @@ export function InternalPortal() {
         const uploadFormData = new FormData();
         uploadFormData.append('file', file);
         
-        const uploadRes = await fetch('/api/drive/upload-service', {
-          method: 'POST',
-          body: uploadFormData
-        });
+        let uploadRes;
+        try {
+          uploadRes = await fetch('/api/drive/upload-service', {
+            method: 'POST',
+            body: uploadFormData
+          });
+        } catch (fetchErr: any) {
+          throw new Error('Connection error: Could not reach the upload server. If you just added environment variables, please restart the dev server.');
+        }
 
         if (!uploadRes.ok) {
-          const errorData = await uploadRes.json();
-          throw new Error(errorData.error || 'Failed to upload to Google Drive');
+          let errorMessage = 'Failed to upload to Google Drive';
+          try {
+            const errorData = await uploadRes.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            // If not JSON, try to get text
+            const text = await uploadRes.text().catch(() => '');
+            if (text.includes('404')) errorMessage = 'Upload endpoint not found (404). Please ensure the server is running correctly.';
+          }
+          throw new Error(errorMessage);
         }
 
         const driveData = await uploadRes.json();
@@ -400,9 +413,14 @@ export function InternalPortal() {
                         Connected to: {driveStatus.serviceAccountEmail} // Root: ...{driveStatus.folderId.slice(-6)}
                       </p>
                     ) : (
-                      <p className="text-[8px] font-mono text-postal-red font-bold mt-1 uppercase tracking-tighter">
-                        Drive not configured. Please add keys to environment.
-                      </p>
+                      <div className="mt-2 p-2 bg-red-50 border border-red-200">
+                        <p className="text-[8px] font-mono text-postal-red font-bold uppercase tracking-tighter flex items-center gap-1">
+                          <AlertCircle size={8} /> Drive Not Configured
+                        </p>
+                        <p className="text-[7px] font-mono text-slate-500 mt-1 uppercase leading-tight">
+                          Please add <code className="bg-white px-1">GOOGLE_CLIENT_EMAIL</code> and <code className="bg-white px-1">GOOGLE_PRIVATE_KEY</code> to the <span className="font-bold text-black">Settings &gt; Environment Variables</span> menu and <span className="font-bold text-black whitespace-nowrap">Restart Dev Server</span>.
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -419,15 +437,15 @@ export function InternalPortal() {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (!!file && !driveStatus.configured)}
                 className="w-full bg-[#141414] text-[#E4E3E0] py-3 px-6 font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#E4E3E0] hover:text-[#141414] border border-[#141414] transition-all disabled:opacity-50 group"
               >
-                {loading ? 'Processing...' : (
+                {loading ? 'Processing...' : (!!file && !driveStatus.configured ? 'Config Required to Upload' : (
                   <>
                     <Save size={16} className="group-hover:scale-110 transition-transform" />
                     Save & Upload
                   </>
-                )}
+                ))}
               </button>
             </form>
           </motion.div>

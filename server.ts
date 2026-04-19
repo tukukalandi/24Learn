@@ -28,14 +28,30 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
 app.use(express.json());
 
+// Helper to clean Folder IDs from extra junk (URLs, spaces, quotes)
+const sanitizeId = (id: string | undefined): string => {
+  if (!id) return '';
+  // Remove everything after ? or #, and trim whitespace
+  const base = id.split(/[?#]/)[0].trim().replace(/^['"]|['"]$/g, '');
+  // If it's a URL, extract the ID after /folders/
+  if (base.includes('/folders/')) {
+    return base.split('/folders/')[1].split('/')[0];
+  }
+  return base;
+};
+
 // Google Drive Service Account Setup
-const driveFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID || '1paMc3Olh8yEEsnOQ8cRosKSrGuiY7tVo';
+const driveFolderId = sanitizeId(process.env.GOOGLE_DRIVE_FOLDER_ID || '1paMc3Olh8yEEsnOQ8cRosKSrGuiY7tVo');
 
 const getDriveService = () => {
+  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
+  // Handle literal \n strings which often happen when pasting into env editors
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n').replace(/^['"]|['"]$/g, '');
+
   const auth = new google.auth.JWT({
-    email: process.env.GOOGLE_CLIENT_EMAIL,
-    key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    scopes: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.readonly']
+    email: clientEmail,
+    key: privateKey,
+    scopes: ['https://www.googleapis.com/auth/drive.file']
   });
   return google.drive({ version: 'v3', auth });
 };
@@ -44,6 +60,7 @@ const getDriveService = () => {
 app.post('/api/drive/upload-service', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file provided' });
+    
     if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
       return res.status(500).json({ error: 'Google Drive Service Account not configured in environment variables.' });
     }
@@ -51,7 +68,7 @@ app.post('/api/drive/upload-service', upload.single('file'), async (req, res) =>
     const drive = getDriveService();
     const fileMetadata = {
       name: req.file.originalname,
-      parents: [driveFolderId.split(/[?#]/)[0].trim().replace(/.*\/folders\//, '')] // Extract ID just in case
+      parents: [driveFolderId]
     };
 
     const media = {
@@ -59,32 +76,38 @@ app.post('/api/drive/upload-service', upload.single('file'), async (req, res) =>
       body: Readable.from(req.file.buffer)
     };
 
-    const file = await drive.files.create({
+    const response = await drive.files.create({
       requestBody: fileMetadata,
       media: media,
-      fields: 'id, webViewLink'
+      fields: 'id, webViewLink',
+      supportsAllDrives: true // Required for shared folders and shared drives
     });
 
-    // Make file readable by anyone if possible (optional, depends on folder settings)
-    try {
-      await drive.permissions.create({
-        fileId: file.data.id!,
-        requestBody: {
-          role: 'reader',
-          type: 'anyone'
-        }
-      });
-    } catch (permError) {
-      console.warn('Could not set public permissions, file may be private:', permError);
-    }
+    // Make the file publicly viewable so the link works for anyone on the site
+    await drive.permissions.create({
+      fileId: response.data.id!,
+      requestBody: {
+        role: 'reader',
+        type: 'anyone'
+      },
+      supportsAllDrives: true
+    });
 
     res.json({ 
-      id: file.data.id,
-      link: file.data.webViewLink 
+      id: response.data.id,
+      link: response.data.webViewLink 
     });
   } catch (error: any) {
     console.error('Service Account Drive Upload Error:', error);
-    res.status(500).json({ error: error.message || 'Failed to upload to Google Drive via Service Account' });
+    
+    let message = error.message || 'Failed to upload to Google Drive';
+    if (message.includes('File not found')) {
+      message = `Folder ID "${driveFolderId}" not found. Verify the ID and ensure you shared the folder with the Service Account email.`;
+    } else if (message.includes('storage quota')) {
+      message = 'Service Account Quota Exceeded. You MUST share the destination folder with the Service Account and ensure the folder owner has space.';
+    }
+
+    res.status(500).json({ error: message });
   }
 });
 
