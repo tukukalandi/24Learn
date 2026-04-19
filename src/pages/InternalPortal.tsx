@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db, storage } from '../firebase';
+import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -44,6 +43,7 @@ export function InternalPortal() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingDoc, setEditingDoc] = useState<PortalDoc | null>(null);
+  const [driveStatus, setDriveStatus] = useState({ configured: false, serviceAccountEmail: '', folderId: '' });
   
   const [formData, setFormData] = useState({
     category: CATEGORIES[0],
@@ -55,7 +55,6 @@ export function InternalPortal() {
 
   const [file, setFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [isUploading, setIsUploading] = useState(false);
 
   const [editFormData, setEditFormData] = useState({
     subType: '',
@@ -63,6 +62,24 @@ export function InternalPortal() {
     description: '',
     link: ''
   });
+
+  useEffect(() => {
+    const checkDriveStatus = async () => {
+      try {
+        const res = await fetch('/api/auth/google/status');
+        if (res.ok) {
+          const data = await res.json();
+          setDriveStatus(data);
+        }
+      } catch (e) {
+        console.error('Failed to check drive status:', e);
+      }
+    };
+    checkDriveStatus();
+    // Re-check periodically
+    const timer = setInterval(checkDriveStatus, 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (editingDoc) {
@@ -172,42 +189,33 @@ export function InternalPortal() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.subType || !formData.name || (!formData.link && !file)) {
-      setMessage({ type: 'error', text: 'Please fill in all required fields or upload a file.' });
-      return;
-    }
-
-    if (file && file.size > 4.5 * 1024 * 1024) {
-      setMessage({ type: 'error', text: 'File is too large! Maximum limit is 4.5MB for server uploads. Please use an external link instead for larger files.' });
-      setLoading(false);
-      setIsUploading(false);
+      setMessage({ type: 'error', text: 'Please provide a document name, sub-type, and either a link or a file.' });
       return;
     }
 
     setLoading(true);
-    setIsUploading(true);
     setMessage(null);
 
     try {
       let finalLink = formData.link;
 
       if (file) {
-        // Upload to Firebase Storage
-        const fileRef = ref(storage, `portal/${Date.now()}_${file.name}`);
-        const uploadTask = uploadBytesResumable(fileRef, file);
-
-        finalLink = await new Promise((resolve, reject) => {
-          uploadTask.on('state_changed', 
-            (snapshot) => {
-              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              setUploadProgress(progress);
-            }, 
-            (error) => reject(error), 
-            async () => {
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              resolve(downloadURL);
-            }
-          );
+        // Upload to Google Drive via Server
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        
+        const uploadRes = await fetch('/api/drive/upload-service', {
+          method: 'POST',
+          body: uploadFormData
         });
+
+        if (!uploadRes.ok) {
+          const errorData = await uploadRes.json();
+          throw new Error(errorData.error || 'Failed to upload to Google Drive');
+        }
+
+        const driveData = await uploadRes.json();
+        finalLink = driveData.link;
       }
 
       await addDoc(collection(db, 'portal_documents'), {
@@ -218,9 +226,8 @@ export function InternalPortal() {
         updatedAt: serverTimestamp()
       });
 
-      setMessage({ type: 'success', text: 'Document uploaded successfully!' });
+      setMessage({ type: 'success', text: 'Document record created successfully!' });
       setFile(null);
-      setUploadProgress(0);
       setFormData({
         ...formData,
         name: '',
@@ -231,11 +238,10 @@ export function InternalPortal() {
       console.error("Upload Error:", error);
       setMessage({ 
         type: 'error', 
-        text: error.message || 'Failed to upload document. Please try again.' 
+        text: error.message || 'Failed to process document. Please try again.' 
       });
     } finally {
       setLoading(false);
-      setIsUploading(false);
     }
   };
 
@@ -254,6 +260,15 @@ export function InternalPortal() {
             <p className="font-mono text-sm uppercase tracking-widest text-yellow-400 font-bold">
               Department of Posts // DakShiksha Administrator
             </p>
+            <div className="flex items-center gap-4">
+              <div className={cn(
+                "px-3 py-1 text-[10px] font-mono font-black border-2 border-black flex items-center gap-2",
+                driveStatus.configured ? "bg-emerald-400 text-black shadow-[2px_2px_0px_#000]" : "bg-white text-black opacity-40"
+              )}>
+                <div className={cn("w-2 h-2 rounded-full", driveStatus.configured ? "bg-black animate-pulse" : "bg-black/20")} />
+                Drive Automator: {driveStatus.configured ? "ACTIVE" : "INACTIVE"}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -380,23 +395,16 @@ export function InternalPortal() {
                         )}
                       </div>
                     </div>
+                    {driveStatus.configured ? (
+                      <p className="text-[8px] font-mono text-emerald-600 font-bold mt-1 uppercase tracking-tighter">
+                        Connected to: {driveStatus.serviceAccountEmail} // Root: ...{driveStatus.folderId.slice(-6)}
+                      </p>
+                    ) : (
+                      <p className="text-[8px] font-mono text-postal-red font-bold mt-1 uppercase tracking-tighter">
+                        Drive not configured. Please add keys to environment.
+                      </p>
+                    )}
                   </div>
-
-                  {isUploading && (
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-[8px] font-mono font-bold uppercase">
-                        <span>Uploading to Cloud...</span>
-                        <span>{Math.round(uploadProgress)}%</span>
-                      </div>
-                      <div className="h-2 bg-slate-100 border border-black overflow-hidden">
-                        <motion.div 
-                          className="h-full bg-postal-red" 
-                          initial={{ width: 0 }}
-                          animate={{ width: `${uploadProgress}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
 
