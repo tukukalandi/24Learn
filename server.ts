@@ -154,11 +154,23 @@ async function setupVite() {
     // Vercel / Production Path
     const distPath = path.join(process.cwd(), 'dist');
     console.log('[Server] Static Path:', distPath);
-    console.log('[Server] Path Exists:', fs.existsSync(distPath));
     
     app.use(express.static(distPath));
+    
+    // Fallback for SPA
     app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+      const indexPath = path.join(distPath, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        // Emergency fallback if Vercel path is different
+        const fallbackPath = path.resolve(__dirname, 'dist', 'index.html');
+        if (fs.existsSync(fallbackPath)) {
+          res.sendFile(fallbackPath);
+        } else {
+          res.status(404).send(`Application Error: build files not found at ${indexPath} or ${fallbackPath}`);
+        }
+      }
     });
   }
 

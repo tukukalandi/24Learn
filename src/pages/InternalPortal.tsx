@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db, storage } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -34,7 +35,8 @@ interface PortalDoc {
 }
 
 export function InternalPortal() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, login, logout } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [documents, setDocuments] = useState<PortalDoc[]>([]);
@@ -120,10 +122,41 @@ export function InternalPortal() {
 
   if (!isAdmin) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
-        <AlertCircle size={48} className="text-red-500 mb-4" />
-        <h1 className="text-2xl font-bold text-slate-900">Access Denied</h1>
-        <p className="text-slate-600 mt-2">Only administrators can access the internal portal.</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center bg-slate-50">
+        <div className="bg-white p-12 border-4 border-black shadow-[8px_8px_0px_#000] max-w-md">
+          <AlertCircle size={48} className="text-postal-red mx-auto mb-4" />
+          <h1 className="text-2xl font-black uppercase tracking-widest text-slate-900">Access Denied</h1>
+          <p className="text-slate-600 mt-4 font-medium">Only authorized administrators can access the internal portal features.</p>
+          
+          {!user ? (
+            <div className="mt-8 space-y-4">
+              <p className="text-xs text-slate-400 uppercase tracking-widest">Please sign in to continue</p>
+              <button 
+                onClick={login}
+                className="w-full bg-postal-red text-white py-4 font-black uppercase tracking-widest border-4 border-black shadow-[4px_4px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-2"
+              >
+                Sign In with Google
+              </button>
+            </div>
+          ) : (
+            <div className="mt-8">
+              <p className="text-xs text-slate-400 uppercase tracking-widest mb-4">Logged in as: {user.email}</p>
+              <button 
+                onClick={logout}
+                className="w-full bg-white text-black py-4 font-black uppercase tracking-widest border-4 border-black shadow-[4px_4px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+              >
+                Switch Account / Logout
+              </button>
+            </div>
+          )}
+          
+          <button 
+            onClick={() => navigate('/')}
+            className="mt-6 text-xs font-bold text-slate-400 hover:text-postal-red transition-colors uppercase tracking-widest"
+          >
+            ← Back to Home
+          </button>
+        </div>
       </div>
     );
   }

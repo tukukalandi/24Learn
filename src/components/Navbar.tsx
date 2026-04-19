@@ -96,7 +96,7 @@ export function Navbar() {
     }
   };
 
-  const { isAdmin } = useAuth();
+  const { user, isAdmin, login, logout } = useAuth();
 
   const examCategories = [
     { name: 'GDS to MTS', search: ['mts'] },
@@ -381,6 +381,50 @@ export function Navbar() {
                 className="h-14 w-auto"
                 referrerPolicy="no-referrer"
               />
+            </div>
+
+            {/* User Auth Section */}
+            <div className="relative group ml-2">
+              <button 
+                className={cn(
+                  "flex items-center gap-2 p-2 rounded-sm border-2 transition-all",
+                  isAdmin ? "bg-postal-yellow text-black border-black" : "bg-white/10 text-white border-white/20 hover:bg-white/20"
+                )}
+                onClick={() => !user && login()}
+              >
+                {user ? (
+                  <>
+                    <img src={user.photoURL || ""} alt="" className="w-6 h-6 rounded-full border border-black/10" referrerPolicy="no-referrer" />
+                    <div className="hidden sm:block text-left">
+                      <p className="text-[10px] font-black uppercase leading-none">{isAdmin ? 'ADMIN' : 'USER'}</p>
+                      <p className="text-[8px] opacity-70 truncate max-w-[80px]">{user.email}</p>
+                    </div>
+                  </>
+                ) : (
+                  <UserCircle size={20} />
+                )}
+              </button>
+              
+              {user && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white shadow-2xl border-2 border-black hidden group-hover:block z-50">
+                  <div className="p-3 border-b-2 border-black/10">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase">Logged in as</p>
+                    <p className="text-xs font-bold text-slate-800 truncate">{user.email}</p>
+                  </div>
+                  {isAdmin && (
+                    <Link to="/internal-portal" className="flex items-center gap-2 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 border-b border-black/5">
+                      <LayoutGrid size={16} className="text-postal-red" />
+                      Internal Portal
+                    </Link>
+                  )}
+                  <button 
+                    onClick={logout}
+                    className="w-full flex items-center gap-2 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 text-left"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

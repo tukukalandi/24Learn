@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error.code === 'auth/popup-blocked') {
         alert("Please allow popups for this site to sign in.");
       } else if (error.code === 'auth/unauthorized-domain') {
-        alert("This domain is not authorized for Google Sign-In. Please check Firebase console.");
+        alert("CRITICAL: This domain (Vercel) is not authorized in your Firebase Project. \n\n1. Go to Firebase Console > Authentication > Settings > Authorized Domains. \n2. Add your Vercel URL to the list. \n3. Try again.");
       } else {
         alert("Failed to sign in with Google. Please try again.");
       }
