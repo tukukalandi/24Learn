@@ -34,12 +34,11 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieSession({
   name: 'google-drive-session',
-  // Using a stable key for sessions to prevent resets on deployment
-  keys: [process.env.SESSION_SECRET || 'postal-knowledge-secure-fallback-key-2024'],
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  keys: [process.env.SESSION_SECRET || 'dakshiksha-secret-key'],
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
   secure: true,
   sameSite: 'none',
-  httpOnly: false
+  httpOnly: true
 }));
 
 // Google OAuth Setup
@@ -111,59 +110,6 @@ app.get('/api/auth/google/status', (req, res) => {
   res.json({ connected: !!req.session?.tokens });
 });
 
-// NEW: Server-to-Server Google Drive Upload (No popups required)
-app.post('/api/drive/upload-service', upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-
-    const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-    // Replace literal \n with actual newlines for the private key
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'); 
-    const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
-
-    if (!clientEmail || !privateKey || !folderId) {
-      return res.status(500).json({ 
-        error: 'Google Drive is not configured. Missing Service Account details in environment variables.' 
-      });
-    }
-
-    const auth = new google.auth.JWT({
-      email: clientEmail,
-      key: privateKey,
-      scopes: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive']
-    });
-
-    const drive = google.drive({ version: 'v3', auth });
-
-    const fileMetadata = {
-      name: req.file.originalname,
-      parents: [folderId] // Save directly to the user's specific folder
-    };
-
-    const media = {
-      mimeType: req.file.mimetype,
-      body: Readable.from(req.file.buffer)
-    };
-
-    const response = await drive.files.create({
-      requestBody: fileMetadata,
-      media: media,
-      fields: 'id, webViewLink'
-    });
-
-    // Make the file publicly readable so users can see it on the portal
-    await drive.permissions.create({
-      fileId: response.data.id!,
-      requestBody: { role: 'reader', type: 'anyone' }
-    });
-
-    res.json({ link: response.data.webViewLink });
-  } catch (error: any) {
-    console.error('Service Account Drive Upload Error:', error);
-    res.status(500).json({ error: error.message || 'Failed to upload to Google Drive' });
-  }
-});
-
 app.post('/api/drive/upload', upload.single('file'), async (req, res) => {
   if (!req.session?.tokens) return res.status(401).json({ error: 'Not connected to Google Drive' });
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
@@ -217,38 +163,18 @@ async function setupVite() {
     });
     app.use(vite.middlewares);
   } else {
-    // Vercel / Production Path
-    // On Vercel, assets are usually in the same directory as the function or predictable
-    const possiblePaths = [
-      path.join(process.cwd(), 'dist'),
-      path.join(__dirname, 'dist'),
-      path.resolve(process.cwd(), 'app/applet/dist'),
-      path.resolve(process.cwd(), '.next/server/chunks/dist') // Some Vercel internals
-    ];
-    
-    let distPath = possiblePaths[0];
-    for (const p of possiblePaths) {
-      if (fs.existsSync(p)) {
-        distPath = p;
-        break;
-      }
-    }
-    
-    console.log('[Server] Static Assets Root:', distPath);
+    // Standard Production Build Path
+    const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     
+    // SPA Fallback: Send index.html for all non-API routes
     app.get('*', (req, res) => {
-      const indexPath = path.join(distPath, 'index.html');
-      if (fs.existsSync(indexPath)) {
-        res.sendFile(indexPath);
-      } else {
-        res.status(404).send(`Application Error: build files not found. Please ensure "npm run build" completed.`);
-      }
+      res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
-  // Only listen if not on Vercel
-  if (!isVercel && (isProd || process.env.VITE_DEV === 'true')) {
+  // Only listen on port if not on Vercel
+  if (!isVercel) {
     app.listen(port, '0.0.0.0', () => {
       console.log(`Server running at http://0.0.0.0:${port}`);
     });
