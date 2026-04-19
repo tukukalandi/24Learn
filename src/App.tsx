@@ -22,6 +22,8 @@ import { AccountantExam } from './pages/AccountantExam';
 import { SavingsBranch } from './pages/SavingsBranch';
 import { OtherBranch } from './pages/OtherBranch';
 import { SearchResults } from './pages/SearchResults';
+import { InternalPortal } from './pages/InternalPortal';
+import { PublicPortal } from './pages/PublicPortal';
 
 export default function App() {
   return (
@@ -35,6 +37,8 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/search" element={<SearchResults />} />
+              <Route path="/internal-portal" element={<InternalPortal />} />
+              <Route path="/portal/:categorySlug" element={<PublicPortal />} />
               <Route path="/rules" element={<Rules />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/exams/accountant" element={<AccountantExam />} />

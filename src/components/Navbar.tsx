@@ -4,12 +4,13 @@ import {
   Search, Menu, X, ChevronRight, Globe, Type, Eye, 
   Mail, Briefcase, Stamp, Package, Users, MoreHorizontal,
   UserCircle, FileText, Download, Calendar, ArrowLeft,
-  GraduationCap, Book, BookOpen
+  GraduationCap, Book, BookOpen, LayoutGrid
 } from 'lucide-react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { cn } from '../lib/utils';
 import Fuse from 'fuse.js';
+import { useAuth } from '../context/AuthContext';
 
 interface SearchItem {
   id: string;
@@ -95,6 +96,8 @@ export function Navbar() {
     }
   };
 
+  const { isAdmin } = useAuth();
+
   const examCategories = [
     { name: 'GDS to MTS', search: ['mts'] },
     { name: 'GDS to Postman', search: ['postman'] },
@@ -114,6 +117,7 @@ export function Navbar() {
   ];
 
   const extraMenuOptions = [
+    ...(isAdmin ? [{ name: 'Internal Portal', icon: LayoutGrid, link: '/internal-portal' }] : []),
     { name: 'Staff Corner', icon: UserCircle, link: '/staff-corner' },
     { name: 'Latest Circulars', icon: FileText, link: '/circulars' },
     { name: 'Download Forms', icon: Download, link: '/forms' },
@@ -437,6 +441,11 @@ export function Navbar() {
                   >
                     Office Directory
                   </a>
+                  {isAdmin && (
+                    <Link to="/internal-portal" className="block px-6 py-2.5 hover:bg-slate-50 text-slate-700 hover:text-postal-red text-sm font-bold transition-colors uppercase">
+                      Internal Portal
+                    </Link>
+                  )}
                   <div className="h-[1px] bg-slate-100 my-1" />
                   <Link to="/about" className="block px-6 py-2.5 hover:bg-slate-50 text-slate-700 hover:text-postal-red text-sm font-bold transition-colors">ABOUT US</Link>
                   <Link to="/contact" className="block px-6 py-2.5 hover:bg-slate-50 text-slate-700 hover:text-postal-red text-sm font-bold transition-colors">CONTACT</Link>

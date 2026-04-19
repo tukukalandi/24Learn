@@ -59,6 +59,22 @@
         "xp": { "type": "number" }
       },
       "required": ["uid", "email", "role"]
+    },
+    "PortalDocument": {
+      "title": "Portal Document",
+      "description": "A document uploaded to the internal portal",
+      "type": "object",
+      "properties": {
+        "category": { "type": "string" },
+        "subType": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "link": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["category", "subType", "name", "link", "createdBy"]
     }
   },
   "firestore": {
@@ -77,6 +93,10 @@
     "/users/{userId}": {
       "schema": "User",
       "description": "Collection of user profiles"
+    },
+    "/portal_documents/{docId}": {
+      "schema": "PortalDocument",
+      "description": "Collection of documents uploaded via internal portal"
     }
   }
 }

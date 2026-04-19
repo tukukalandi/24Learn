@@ -58,14 +58,14 @@ const SLIDES = [
 ];
 
 const QUICK_LINKS = [
-  { icon: BookOpen, title: "GDS to MTS", desc: "Study material for MTS recruitment", link: "/exams/mts" },
-  { icon: GraduationCap, title: "Postman Exam", desc: "Resources for Postman/Mail Guard", link: "/exams/postman" },
-  { icon: Trophy, title: "PA/SA Exam", desc: "Postal & Sorting Assistant material", link: "/exams/pa" },
-  { icon: LayoutGrid, title: "LGO Exam", desc: "Lower Grade Official promotion", link: "/exams/lgo" },
-  { icon: Newspaper, title: "IP Exam", desc: "Inspector Posts preparation", link: "/exams/inspector" },
-  { icon: Book, title: "PO Guide", desc: "Post Office Guide Part I & II", link: "/exams/po-guide" },
-  { icon: FileText, title: "Postal Manuals", desc: "Volume V, VI, and VII resources", link: "/exams/manuals" },
-  { icon: Calculator, title: "Accountant Exam", desc: "PO Accountant Exam resources", link: "/exams/accountant" },
+  { icon: BookOpen, title: "GDS to MTS", desc: "Study material for MTS recruitment", link: "/portal/mts" },
+  { icon: GraduationCap, title: "Postman Exam", desc: "Resources for Postman/Mail Guard", link: "/portal/postman" },
+  { icon: Trophy, title: "PA/SA Exam", desc: "Postal & Sorting Assistant material", link: "/portal/pa" },
+  { icon: LayoutGrid, title: "LGO Exam", desc: "Lower Grade Official promotion", link: "/portal/lgo" },
+  { icon: Newspaper, title: "IP Exam", desc: "Inspector Posts preparation", link: "/portal/inspector" },
+  { icon: Book, title: "PO Guide", desc: "Post Office Guide Part I & II", link: "/portal/po-guide" },
+  { icon: FileText, title: "Postal Manuals", desc: "Volume V, VI, and VII resources", link: "/portal/manuals" },
+  { icon: Calculator, title: "Accountant Exam", desc: "PO Accountant Exam resources", link: "/portal/accountant" },
 ];
 
 const BRANCHES = [
