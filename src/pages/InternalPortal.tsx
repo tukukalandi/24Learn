@@ -79,7 +79,7 @@ export function InternalPortal() {
   useEffect(() => {
     const checkDriveStatus = async () => {
       try {
-        const res = await fetch('/api/auth/google/status');
+        const res = await fetch('/api/auth/google/status', { credentials: 'include' });
         const data = await res.json();
         setIsDriveConnected(data.connected);
       } catch (error) {
@@ -100,7 +100,7 @@ export function InternalPortal() {
 
   const connectGoogleDrive = async () => {
     try {
-      const res = await fetch('/api/auth/google/url');
+      const res = await fetch('/api/auth/google/url', { credentials: 'include' });
       const { url } = await res.json();
       window.open(url, 'google_oauth', 'width=600,height=700');
     } catch (error) {
@@ -212,7 +212,7 @@ export function InternalPortal() {
 
     // Double check connection status
     if (file) {
-      const statusRes = await fetch('/api/auth/google/status');
+      const statusRes = await fetch('/api/auth/google/status', { credentials: 'include' });
       const statusData = await statusRes.json();
       if (!statusData.connected) {
         setIsDriveConnected(false);
@@ -237,7 +237,8 @@ export function InternalPortal() {
           
           const res = await fetch('/api/drive/upload', {
             method: 'POST',
-            body: uploadFormData
+            body: uploadFormData,
+            credentials: 'include'
           });
           
           if (!res.ok) {

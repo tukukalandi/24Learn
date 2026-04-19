@@ -31,11 +31,12 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieSession({
   name: 'google-drive-session',
-  keys: [process.env.SESSION_SECRET || 'dakshiksha-secret-key'],
-  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  // Using a stable key for sessions to prevent resets on deployment
+  keys: [process.env.SESSION_SECRET || 'postal-knowledge-secure-fallback-key-2024'],
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   secure: true,
   sameSite: 'none',
-  httpOnly: false // Needed for some iframe scenarios
+  httpOnly: false
 }));
 
 // Google OAuth Setup
