@@ -127,12 +127,11 @@ app.post('/api/drive/upload-service', upload.single('file'), async (req, res) =>
       });
     }
 
-    const auth = new google.auth.JWT(
-      clientEmail,
-      undefined,
-      privateKey,
-      ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive']
-    );
+    const auth = new google.auth.JWT({
+      email: clientEmail,
+      key: privateKey,
+      scopes: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive']
+    });
 
     const drive = google.drive({ version: 'v3', auth });
 
