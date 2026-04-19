@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "cleanUrls": true,
   "builds": [
     {
       "src": "server.ts",
@@ -12,15 +13,18 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server.ts"
+      "dest": "server.ts",
+      "check": true
     },
     {
       "src": "/auth/(.*)",
-      "dest": "server.ts"
+      "dest": "server.ts",
+      "check": true
     },
     {
       "src": "/(.*)",
-      "dest": "server.ts"
+      "dest": "server.ts",
+      "check": true
     }
   ]
 }

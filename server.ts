@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { google } from 'googleapis';
 import multer from 'multer';
@@ -152,6 +153,9 @@ async function setupVite() {
   } else {
     // Vercel / Production Path
     const distPath = path.join(process.cwd(), 'dist');
+    console.log('[Server] Static Path:', distPath);
+    console.log('[Server] Path Exists:', fs.existsSync(distPath));
+    
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
