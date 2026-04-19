@@ -210,16 +210,11 @@ export function InternalPortal() {
       return;
     }
 
-    // Double check connection status
-    if (file) {
-      const statusRes = await fetch('/api/auth/google/status', { credentials: 'include' });
-      const statusData = await statusRes.json();
-      if (!statusData.connected) {
-        setIsDriveConnected(false);
-        setMessage({ type: 'error', text: 'Google Drive session expired. Please click "Link Google Drive" again.' });
-        setLoading(false);
-        return;
-      }
+    // Double check connection status but don't strictly block yet (they might skip drive)
+    if (file && !isDriveConnected) {
+      // The user chose file upload but hasn't connected drive.
+      // We will default to Firebase storage below if this happens, 
+      // but let's encourage them to link drive if they want drive functionality.
     }
 
     setLoading(true);
@@ -230,42 +225,92 @@ export function InternalPortal() {
       let finalLink = formData.link;
 
       if (file) {
-        if (isDriveConnected) {
-          // Upload to Google Drive
+        // Helper for fetch with timeout
+        const fetchWithTimeout = async (url: string, options: any, timeout = 15000) => {
+          const controller = new AbortController();
+          const id = setTimeout(() => controller.abort(), timeout);
+          try {
+            const response = await fetch(url, {
+              ...options,
+              signal: controller.signal
+            });
+            clearTimeout(id);
+            return response;
+          } catch (err) {
+            clearTimeout(id);
+            throw err;
+          }
+        };
+
+        // STEP 1: Try Service Account Upload (Most reliable, no popup needed)
+        try {
           const uploadFormData = new FormData();
           uploadFormData.append('file', file);
           
-          const res = await fetch('/api/drive/upload', {
+          const saRes = await fetchWithTimeout('/api/drive/upload-service', {
             method: 'POST',
-            body: uploadFormData,
-            credentials: 'include'
-          });
+            body: uploadFormData
+          }, 25000); // 25s timeout for Drive upload
           
-          if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.error || 'Drive upload failed');
+          const saData = await saRes.json();
+          
+          if (saRes.ok && saData.link) {
+            finalLink = saData.link;
+          } else {
+            throw new Error(saData.error || 'Service Account upload failed');
           }
-          const data = await res.json();
-          finalLink = data.link;
-        } else {
-          // Fallback to Firebase Storage
-          const fileRef = ref(storage, `portal/${Date.now()}_${file.name}`);
-          const uploadTask = uploadBytesResumable(fileRef, file);
-
-          finalLink = await new Promise((resolve, reject) => {
-            uploadTask.on('state_changed', 
-              (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                setUploadProgress(progress);
-              }, 
-              (error) => reject(error), 
-              async () => {
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                resolve(downloadURL);
+        } catch (saError) {
+          console.log("Service Account upload skipped or failed, trying OAuth/Firebase:", saError);
+          
+          if (isDriveConnected) {
+            // STEP 2: Try OAuth Upload (User linked their drive)
+            try {
+              const uploadFormData = new FormData();
+              uploadFormData.append('file', file);
+              
+              const oaRes = await fetchWithTimeout('/api/drive/upload', {
+                method: 'POST',
+                body: uploadFormData,
+                credentials: 'include'
+              }, 25000);
+              
+              const oaData = await oaRes.json();
+              
+              if (oaRes.ok && oaData.link) {
+                finalLink = oaData.link;
+              } else {
+                if (oaRes.status === 401) setIsDriveConnected(false);
+                throw new Error(oaData.error || 'OAuth upload failed');
               }
-            );
-          });
+            } catch (oaError) {
+              console.log("OAuth upload failed, falling back to Firebase Storage:", oaError);
+              finalLink = await uploadToFirebase();
+            }
+          } else {
+            // STEP 3: Fallback to Firebase Storage (Local App Storage)
+            finalLink = await uploadToFirebase();
+          }
         }
+      }
+
+      async function uploadToFirebase() {
+        if (!file) return '';
+        const fileRef = ref(storage, `portal/${Date.now()}_${file.name}`);
+        const uploadTask = uploadBytesResumable(fileRef, file);
+
+        return new Promise<string>((resolve, reject) => {
+          uploadTask.on('state_changed', 
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress(progress);
+            }, 
+            (error) => reject(error), 
+            async () => {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(downloadURL);
+            }
+          );
+        });
       }
 
       await addDoc(collection(db, 'portal_documents'), {
@@ -287,10 +332,20 @@ export function InternalPortal() {
       });
     } catch (error: any) {
       console.error("Upload Error:", error);
-      setMessage({ 
-        type: 'error', 
-        text: error.message || 'Failed to upload document. Please try again.' 
-      });
+      
+      const isDriveApiError = error.message?.includes('DRIVE_API_DISABLED') || error.message?.includes('Google Drive API has not been used');
+      
+      if (isDriveApiError) {
+        setMessage({ 
+          type: 'error', 
+          text: error.message 
+        });
+      } else {
+        setMessage({ 
+          type: 'error', 
+          text: error.message || 'Failed to upload document. Please try again.' 
+        });
+      }
     } finally {
       setLoading(false);
       setIsUploading(false);
@@ -314,10 +369,11 @@ export function InternalPortal() {
             </p>
             <button
               onClick={connectGoogleDrive}
-              className={cn(
-                "px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-wider border-2 border-black shadow-[4px_4px_0px_#000] transition-all flex items-center gap-2",
-                isDriveConnected ? "bg-emerald-500 text-white" : "bg-white text-black hover:bg-yellow-400"
-              )}
+              style={{
+                backgroundColor: isDriveConnected ? '#10b981' : '#ffffff',
+                color: isDriveConnected ? '#ffffff' : '#000000',
+              }}
+              className="px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-wider border-2 border-black shadow-[4px_4px_0px_#000] transition-all flex items-center gap-2 hover:bg-yellow-400"
             >
               <LinkIcon size={14} />
               {isDriveConnected ? 'Drive Linked' : 'Link Google Drive'}
@@ -404,7 +460,7 @@ export function InternalPortal() {
                 <div className="space-y-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-mono italic uppercase opacity-50 tracking-wider flex items-center gap-1">
-                      <LinkIcon size={10} /> Option 1: External / Drive Link
+                      <LinkIcon size={10} /> Option 1: External URL Link
                     </label>
                     <input
                       type="url"
@@ -469,11 +525,37 @@ export function InternalPortal() {
               </div>
 
               {message && (
-                <div className={`p-3 font-mono text-[10px] flex items-center gap-2 ${
-                  message.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-red-50 text-red-800 border border-red-200'
+                <div className={`p-4 font-mono text-[10px] sm:text-xs flex flex-col gap-3 border-2 ${
+                  message.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-red-50 text-red-800 border-red-300'
                 }`}>
-                  {message.type === 'success' ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
-                  {message.text}
+                  <div className="flex items-start gap-2">
+                    {message.type === 'success' ? <CheckCircle2 size={16} className="mt-0.5 shrink-0" /> : <AlertCircle size={16} className="mt-0.5 shrink-0" />}
+                    <span className="leading-relaxed">{message.text}</span>
+                  </div>
+                  
+                  {message.type === 'error' && message.text.includes('Drive Upload Error:') && (
+                    <div className="mt-2 flex flex-col sm:flex-row gap-2 w-full pt-3 border-t border-red-200">
+                      <a 
+                        href="https://console.developers.google.com/apis/api/drive.googleapis.com/overview"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 bg-[#141414] text-white py-2 px-3 text-center uppercase tracking-widest font-bold hover:bg-postal-red transition-colors"
+                      >
+                        Enable Drive API Now
+                      </a>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsDriveConnected(false); // Disconnect
+                          setMessage(null);
+                        }}
+                        className="flex-1 bg-white text-black border border-[#141414] py-2 px-3 text-center uppercase tracking-widest font-bold hover:bg-slate-100 transition-colors"
+                      >
+                        Skip Drive & Use Local Storage
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 

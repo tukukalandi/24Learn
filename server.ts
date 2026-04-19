@@ -108,6 +108,67 @@ app.get('/api/auth/google/status', (req, res) => {
   res.json({ connected: !!req.session?.tokens });
 });
 
+// NEW: Server-to-Server Google Drive Upload (No popups required)
+app.post('/api/drive/upload-service', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+    const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+    // Replace literal \n with actual newlines for the private key
+    const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'); 
+    const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+
+    if (!clientEmail || !privateKey || !folderId) {
+      return res.status(500).json({ 
+        error: 'Google Drive is not configured. Missing Service Account details in environment variables.' 
+      });
+    }
+
+    const auth = new google.auth.JWT({
+      email: clientEmail,
+      key: privateKey,
+      scopes: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive']
+    });
+
+    const drive = google.drive({ version: 'v3', auth });
+
+    const fileMetadata = {
+      name: req.file.originalname,
+      parents: [folderId] // Save directly to the user's specific folder
+    };
+
+    const media = {
+      mimeType: req.file.mimetype,
+      body: Readable.from(req.file.buffer)
+    };
+
+    const response = await drive.files.create({
+      requestBody: fileMetadata,
+      media: media,
+      fields: 'id, webViewLink'
+    });
+
+    // Make the file publicly readable so users can see it on the portal
+    await drive.permissions.create({
+      fileId: response.data.id!,
+      requestBody: { role: 'reader', type: 'anyone' }
+    });
+
+    res.json({ link: response.data.webViewLink });
+  } catch (error: any) {
+    console.error('Service Account Drive Upload Error:', error);
+    
+    let errorMessage = error.response?.data?.error?.message || error.message || 'Failed to upload to Google Drive';
+    
+    // Explicit check for "API Disabled" error from Google for Service Account
+    if (errorMessage.includes('has not been used in project') || errorMessage.includes('is disabled')) {
+      errorMessage = `Drive Upload Error: ${errorMessage}`;
+    }
+    
+    res.status(500).json({ error: errorMessage, type: 'DRIVE_API_DISABLED' });
+  }
+});
+
 app.post('/api/drive/upload', upload.single('file'), async (req, res) => {
   if (!req.session?.tokens) return res.status(401).json({ error: 'Not connected to Google Drive' });
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
@@ -146,8 +207,15 @@ app.post('/api/drive/upload', upload.single('file'), async (req, res) => {
     });
   } catch (error: any) {
     console.error('Drive Upload Error:', error);
-    const errorMessage = error.response?.data?.error_description || error.message || 'Failed to upload to Google Drive';
-    res.status(500).json({ error: errorMessage });
+    
+    // Explicit check for "API Disabled" error from Google
+    let errorMessage = error.response?.data?.error?.message || error.response?.data?.error_description || error.message || 'Failed to upload to Google Drive';
+    
+    if (errorMessage.includes('has not been used in project') || errorMessage.includes('is disabled')) {
+      errorMessage = `Drive Upload Error: ${errorMessage}`;
+    }
+    
+    res.status(500).json({ error: errorMessage, type: 'DRIVE_API_DISABLED' });
   }
 });
 
