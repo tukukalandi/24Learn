@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
-import { Trophy, ArrowLeft, BookOpen, GraduationCap, Target } from 'lucide-react';
+import { Target, GraduationCap, BookOpen, ArrowLeft, Trophy } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
 export function CompetitiveExams() {
   return (
@@ -31,17 +32,26 @@ export function CompetitiveExams() {
             { 
               title: 'GDS to MTS', 
               desc: 'Complete syllabus coverage for MTS recruitment exam including PO Guide Part I and General Knowledge.',
-              icon: Target
+              icon: Target,
+              color: "from-blue-500 to-indigo-600",
+              shadow: "shadow-blue-200",
+              light: "bg-blue-50"
             },
             { 
               title: 'GDS to Postman', 
               desc: 'Detailed resources for Postman/Mail Guard exams covering Postal Manual Vol V and local geography.',
-              icon: GraduationCap
+              icon: GraduationCap,
+              color: "from-emerald-500 to-teal-600",
+              shadow: "shadow-emerald-200",
+              light: "bg-emerald-50"
             },
             { 
               title: 'PA/SA Exam', 
               desc: 'Advanced study material for Postal Assistant and Sorting Assistant recruitment.',
-              icon: BookOpen
+              icon: BookOpen,
+              color: "from-postal-red to-rose-700",
+              shadow: "shadow-red-200",
+              light: "bg-red-50"
             },
           ].map((exam, i) => (
             <motion.div
@@ -50,17 +60,37 @@ export function CompetitiveExams() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="bg-white border border-slate-200 rounded-sm p-8 shadow-sm hover:shadow-md transition-shadow group"
+              whileHover={{ y: -10 }}
+              className="relative group h-full"
             >
-              <div className="h-12 w-12 bg-ncert-maroon/5 text-ncert-maroon rounded-sm flex items-center justify-center mb-6 group-hover:bg-ncert-maroon group-hover:text-white transition-colors">
-                <exam.icon size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-slate-800 group-hover:text-ncert-maroon transition-colors">{exam.title}</h3>
-              <p className="mt-4 text-sm text-slate-500 leading-relaxed">{exam.desc}</p>
-              <div className="mt-8 pt-6 border-t border-slate-100">
-                <button className="text-xs font-bold text-ncert-maroon uppercase tracking-widest hover:underline">
-                  Coming Soon →
-                </button>
+              <div className={cn(
+                "h-full bg-white border-2 border-slate-100 rounded-2xl p-8 shadow-xl transition-all duration-300 group-hover:border-transparent group-hover:shadow-2xl flex flex-col items-center text-center",
+                i === 0 ? "hover:shadow-blue-500/20" : i === 1 ? "hover:shadow-emerald-500/20" : "hover:shadow-red-500/20"
+              )}>
+                <div className={cn(
+                  "h-20 w-20 rounded-2xl flex items-center justify-center mb-8 transform transition-transform group-hover:scale-110 group-hover:rotate-3 shadow-lg bg-gradient-to-br text-white",
+                  exam.color
+                )}>
+                  <exam.icon size={36} />
+                </div>
+                
+                <h3 className="text-2xl font-black text-slate-800 mb-4 tracking-tight uppercase group-hover:text-postal-red transition-colors whitespace-pre-line">
+                  {exam.title}
+                </h3>
+                
+                <p className="text-sm text-slate-500 leading-relaxed font-medium mb-8">
+                  {exam.desc}
+                </p>
+
+                <div className="mt-auto w-full">
+                  <div className={cn("h-1 w-12 mx-auto mb-6 rounded-full bg-gradient-to-r transition-all group-hover:w-full", exam.color)} />
+                  <button className={cn(
+                    "w-full py-3 px-6 rounded-xl font-black text-xs uppercase tracking-widest text-white transform transition-all active:scale-95 shadow-lg bg-gradient-to-r",
+                    exam.color
+                  )}>
+                    Explore Syllabus →
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))}

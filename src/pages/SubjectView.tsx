@@ -186,26 +186,45 @@ export function SubjectView() {
             
             <div className="p-6 md:p-8 bg-white">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {currentChapters.map((chapter, index) => (
-                  <motion.div 
-                    key={chapter.id || index}
-                    whileHover={{ scale: 1.01, x: 2 }}
-                    whileTap={{ scale: 0.99 }}
-                    className="group flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-ncert-maroon/30 transition-all cursor-pointer"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-blue-50/80 flex items-center justify-center text-ncert-maroon font-black text-xl shrink-0 border border-blue-100/50">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-base md:text-lg font-bold text-slate-700 group-hover:text-slate-900 leading-tight">
-                        {chapter.title || chapter.name || chapter}
-                      </h3>
-                    </div>
-                    <div className="text-slate-300 group-hover:text-ncert-maroon transition-colors">
-                      <ChevronRight size={20} />
-                    </div>
-                  </motion.div>
-                ))}
+                {currentChapters.map((chapter, index) => {
+                  const colors = [
+                    { bg: 'bg-blue-50', text: 'text-blue-600', border: 'hover:border-blue-300' },
+                    { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'hover:border-emerald-300' },
+                    { bg: 'bg-rose-50', text: 'text-rose-600', border: 'hover:border-rose-300' },
+                    { bg: 'bg-amber-50', text: 'text-amber-600', border: 'hover:border-amber-300' },
+                    { bg: 'bg-violet-50', text: 'text-violet-600', border: 'hover:border-violet-300' },
+                    { bg: 'bg-orange-50', text: 'text-orange-600', border: 'hover:border-orange-300' }
+                  ];
+                  const color = colors[index % colors.length];
+                  
+                  return (
+                    <motion.div 
+                      key={chapter.id || index}
+                      whileHover={{ scale: 1.02, x: 4 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={cn(
+                        "group flex items-center gap-4 p-5 bg-white rounded-2xl border transition-all cursor-pointer shadow-sm hover:shadow-lg",
+                        color.border
+                      )}
+                    >
+                      <div className={cn(
+                        "w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl shrink-0 transition-colors uppercase",
+                        color.bg,
+                        color.text
+                      )}>
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-base md:text-lg font-black text-slate-700 group-hover:text-slate-900 leading-tight uppercase tracking-tight">
+                          {chapter.title || chapter.name || chapter}
+                        </h3>
+                      </div>
+                      <div className={cn("transition-colors", color.text)}>
+                        <ChevronRight size={24} />
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
           </motion.div>

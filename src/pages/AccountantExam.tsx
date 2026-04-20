@@ -5,6 +5,7 @@ import {
   Info, Award, GraduationCap, CheckSquare, Square, ChevronRight
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
 const syllabusData = {
   p1p1: {
@@ -414,22 +415,37 @@ export function AccountantExam() {
                 className="space-y-8"
               >
                 <h2 className="text-2xl font-bold text-slate-800 mb-6 border-b pb-4">Study Documents & PYQs</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {documents.map((doc, idx) => (
-                    <div key={idx} className="bg-slate-50 p-6 rounded-xl border border-slate-100 flex items-center justify-between group hover:bg-white hover:shadow-md transition-all">
-                      <div className="flex items-center gap-4">
-                        <div className={`p-3 rounded-lg ${doc.type === 'Syllabus' ? 'bg-red-100 text-postal-red' : 'bg-yellow-100 text-yellow-700'}`}>
-                          <FileText size={24} />
+                    <motion.div 
+                      key={idx} 
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-white p-6 rounded-2xl border-2 border-slate-100 flex items-center justify-between group hover:border-postal-red hover:shadow-[0_10px_30px_-10px_rgba(231,24,37,0.3)] transition-all cursor-pointer"
+                    >
+                      <div className="flex items-center gap-5">
+                        <div className={cn(
+                          "w-16 h-16 rounded-2xl flex items-center justify-center transition-colors shadow-inner",
+                          doc.type === 'Syllabus' ? 'bg-red-50 text-postal-red group-hover:bg-postal-red group-hover:text-white' : 'bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white'
+                        )}>
+                          <FileText size={32} />
                         </div>
                         <div>
-                          <h4 className="font-bold text-slate-800">{doc.name}</h4>
-                          <p className="text-sm text-slate-500">{doc.type} • Year {doc.year}</p>
+                          <h4 className="font-bold text-slate-800 text-lg group-hover:text-postal-red transition-colors">{doc.name}</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={cn(
+                              "px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest",
+                              doc.type === 'Syllabus' ? 'bg-red-100 text-postal-red' : 'bg-amber-100 text-amber-700'
+                            )}>
+                              {doc.type}
+                            </span>
+                            <span className="text-xs text-slate-400 font-mono">EY:{doc.year}</span>
+                          </div>
                         </div>
                       </div>
-                      <button className="p-2 rounded-full bg-white border border-slate-200 text-slate-400 group-hover:text-postal-red group-hover:border-postal-red transition-all">
+                      <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-postal-red group-hover:text-white transition-all transform group-hover:translate-x-1">
                         <ChevronRight size={20} />
-                      </button>
-                    </div>
+                      </div>
+                    </motion.div>
                   ))}
                 </div>
               </motion.div>

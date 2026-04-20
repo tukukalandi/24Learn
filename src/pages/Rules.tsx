@@ -5,6 +5,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
 export function Rules() {
   const cards = [
@@ -61,27 +62,46 @@ export function Rules() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {cards.map((card, i) => (
-              <motion.a
-                key={card.title}
-                href={card.link}
-                target={card.link !== "#" ? "_blank" : undefined}
-                rel="noopener noreferrer"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className={`${card.color} rounded-md p-5 flex flex-col items-center justify-center text-center gap-4 shadow-md hover:shadow-xl transition-all cursor-pointer group border border-white/10 min-h-[220px]`}
-              >
-                <div className="bg-white p-4 rounded-full shadow-inner group-hover:scale-110 transition-transform flex-shrink-0">
-                  <card.icon className="text-slate-700" size={32} />
-                </div>
-                <div className="text-white">
-                  <h3 className="text-lg font-bold leading-tight">{card.title}</h3>
-                  <p className="text-[11px] opacity-90 mt-1 leading-tight font-medium">{card.desc}</p>
-                </div>
-              </motion.a>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {cards.map((card, i) => {
+              const gradientClass = 
+                card.color === 'bg-postal-red' ? 'from-postal-red to-rose-700 shadow-red-500/20' :
+                card.color === 'bg-[#009688]' ? 'from-teal-500 to-emerald-700 shadow-emerald-500/20' :
+                card.color === 'bg-[#7e57c2]' ? 'from-violet-500 to-purple-700 shadow-violet-500/20' :
+                'from-blue-500 to-indigo-700 shadow-blue-500/20';
+
+              return (
+                <motion.a
+                  key={card.title}
+                  href={card.link}
+                  target={card.link !== "#" ? "_blank" : undefined}
+                  rel="noopener noreferrer"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.05 }}
+                  whileHover={{ y: -10 }}
+                  className={cn(
+                    "relative overflow-hidden rounded-[2rem] p-8 shadow-2xl transition-all cursor-pointer group border-b-8 border-black/10 min-h-[260px] bg-gradient-to-br flex flex-col items-center justify-center text-center gap-6",
+                    gradientClass
+                  )}
+                >
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-white/20 blur-xl rounded-full scale-150 animate-pulse" />
+                    <div className="relative bg-white p-5 rounded-2xl shadow-xl group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+                      <card.icon className="text-slate-800" size={32} />
+                    </div>
+                  </div>
+                  <div className="text-white space-y-2">
+                    <h3 className="text-xl font-black leading-tight uppercase tracking-tight">{card.title}</h3>
+                    <p className="text-[10px] opacity-80 leading-tight font-bold uppercase tracking-widest max-w-[180px] mx-auto">{card.desc}</p>
+                  </div>
+                  
+                  <div className="px-5 py-2 bg-white/10 rounded-full text-[9px] font-black uppercase tracking-widest text-white border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    Read Document
+                  </div>
+                </motion.a>
+              );
+            })}
           </div>
         </div>
       </div>

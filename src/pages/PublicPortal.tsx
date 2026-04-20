@@ -44,6 +44,17 @@ const CATEGORY_MAP: Record<string, string> = {
   'accountant': 'Accountant Exam'
 };
 
+const CARD_COLORS = [
+  { bg: 'bg-[#e53935]', dark: 'bg-[#c62828]', shadow: 'shadow-red-500/20' }, // Red
+  { bg: 'bg-[#00897b]', dark: 'bg-[#00695c]', shadow: 'shadow-teal-500/20' }, // Teal
+  { bg: 'bg-[#5e35b1]', dark: 'bg-[#4527a0]', shadow: 'shadow-purple-500/20' }, // Purple
+  { bg: 'bg-[#1e88e5]', dark: 'bg-[#1565c0]', shadow: 'shadow-blue-500/20' }, // Blue
+  { bg: 'bg-[#fb8c00]', dark: 'bg-[#ef6c00]', shadow: 'shadow-orange-500/20' }, // Orange
+  { bg: 'bg-[#d8a100]', dark: 'bg-[#b78a00]', shadow: 'shadow-amber-500/20' }, // Amber
+  { bg: 'bg-[#43a047]', dark: 'bg-[#2e7d32]', shadow: 'shadow-green-500/20' }, // Green
+  { bg: 'bg-[#8e24aa]', dark: 'bg-[#6a1b9a]', shadow: 'shadow-fuchsia-500/20' }, // Deep Purple
+];
+
 export function PublicPortal() {
   const { categorySlug } = useParams<{ categorySlug: string }>();
   const [documents, setDocuments] = useState<PortalDoc[]>([]);
@@ -158,27 +169,39 @@ export function PublicPortal() {
                 exit={{ opacity: 0, x: 20 }}
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
               >
-                {subTypes.map((subType) => (
-                  <motion.div
-                    key={subType}
-                    whileHover={{ y: -5 }}
-                    onClick={() => setSelectedSubType(subType)}
-                    className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-postal-red transition-all cursor-pointer group"
-                  >
-                    <div className="w-12 h-12 bg-postal-red/5 rounded-xl flex items-center justify-center text-postal-red mb-6 group-hover:bg-postal-red group-hover:text-white transition-colors">
-                      <LayoutPanelLeft size={24} />
-                    </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-postal-red transition-colors">
-                      {subType}
-                    </h3>
-                    <p className="text-slate-500 text-sm">
-                      {groupedDocs[subType].length} {groupedDocs[subType].length === 1 ? 'Resource' : 'Resources'} available
-                    </p>
-                    <div className="mt-6 flex items-center text-xs font-bold text-postal-red uppercase tracking-widest gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      View Documents <ChevronRight size={14} />
-                    </div>
-                  </motion.div>
-                ))}
+                {subTypes.map((subType, i) => {
+                  const color = CARD_COLORS[i % CARD_COLORS.length];
+                  return (
+                    <motion.div
+                      key={subType}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setSelectedSubType(subType)}
+                      className={cn(
+                        "flex items-stretch overflow-hidden rounded-md shadow-md transition-all cursor-pointer h-20 group",
+                        color.bg,
+                        color.shadow
+                      )}
+                    >
+                      <div className={cn("w-16 flex items-center justify-center shrink-0 border-r border-white/10", color.dark)}>
+                        <div className="bg-white/95 p-2 rounded-full shadow-inner text-slate-700">
+                          <LayoutPanelLeft size={18} />
+                        </div>
+                      </div>
+                      <div className="flex-1 p-3 flex flex-col justify-center min-w-0">
+                        <h3 className="text-white font-black text-sm uppercase tracking-tight truncate leading-tight group-hover:underline decoration-white/30 underline-offset-2">
+                          {subType}
+                        </h3>
+                        <p className="text-white/70 text-[10px] font-bold uppercase tracking-widest mt-0.5">
+                          {groupedDocs[subType].length} Resources
+                        </p>
+                      </div>
+                      <div className="px-3 flex items-center text-white/40 group-hover:text-white transition-colors">
+                        <ChevronRight size={16} />
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </motion.div>
             ) : (
               // Documents List for Selected Sub-Type
@@ -189,57 +212,63 @@ export function PublicPortal() {
                 exit={{ opacity: 0, x: -20 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               >
-                {groupedDocs[selectedSubType]?.map((doc) => {
+                {groupedDocs[selectedSubType]?.map((doc, i) => {
                   const typeInfo = getFileTypeInfo(doc.link);
+                  const color = CARD_COLORS[i % CARD_COLORS.length];
+                  
                   return (
-                    <div
+                    <motion.a
                       key={doc.id}
-                      className="bg-white rounded-2xl p-6 border border-slate-200 hover:border-postal-red hover:shadow-xl transition-all h-full flex flex-col group"
+                      href={doc.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={cn(
+                        "flex items-stretch overflow-hidden rounded-md shadow-md transition-all cursor-pointer h-24 group relative",
+                        color.bg,
+                        color.shadow
+                      )}
                     >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className={cn("p-3 rounded-xl", typeInfo.bgColor, typeInfo.color)}>
-                          <FileText size={24} />
+                      {/* Left Icon Section */}
+                      <div className={cn("w-20 sm:w-24 flex items-center justify-center shrink-0 border-r border-white/10", color.dark)}>
+                        <div className="bg-white/95 p-3 rounded-full shadow-lg text-slate-700 transform group-hover:scale-110 group-hover:rotate-6 transition-transform">
+                          <FileText size={22} />
                         </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <span className={cn("text-[8px] font-black uppercase tracking-tighter px-1.5 py-0.5 border rounded-sm", typeInfo.color, "border-current")}>
+                      </div>
+
+                      {/* Content Section */}
+                      <div className="flex-1 p-4 flex flex-col justify-center min-w-0 pr-10">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[8px] font-black uppercase tracking-[0.2em] bg-white/20 px-2 py-0.5 rounded text-white border border-white/10">
                             {typeInfo.label}
                           </span>
-                          <a 
-                            href={doc.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-2 text-slate-400 hover:text-postal-red transition-colors"
-                          >
-                            <ExternalLink size={20} />
-                          </a>
                         </div>
+                        <h3 className="text-white font-black text-sm sm:text-base uppercase tracking-tight truncate leading-tight group-hover:underline decoration-white/40 underline-offset-4">
+                          {doc.name}
+                        </h3>
+                        {doc.description && (
+                          <p className="text-white/70 text-[10px] leading-tight mt-1 line-clamp-1 italic font-medium">
+                            {doc.description}
+                          </p>
+                        )}
                       </div>
 
-                      <h3 className="text-lg font-bold text-slate-900 mb-2 leading-tight">
-                        {doc.name}
-                      </h3>
+                      {/* Floating Actions */}
+                      <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                         <div className="p-1 rounded bg-black/10 text-white">
+                           <ExternalLink size={14} />
+                         </div>
+                      </div>
                       
-                      {doc.description && (
-                        <p className="text-slate-600 text-sm mb-6 line-clamp-3 italic">
-                          {doc.description}
-                        </p>
-                      )}
-
-                      <div className="mt-auto pt-6 border-t border-slate-100 flex items-center justify-between">
-                        <div className="flex items-center text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-                          <Clock size={12} className="mr-1" />
-                          {doc.createdAt?.toDate().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
-                        </div>
-                        <a 
-                          href={doc.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs font-bold text-postal-red hover:underline flex items-center gap-1"
-                        >
-                          DOWNLOAD <Download size={14} />
-                        </a>
+                      <div className="absolute bottom-2 right-3 flex items-center gap-1.5 pointer-events-none">
+                         <div className="flex items-center text-[8px] text-white/50 uppercase tracking-[0.15em] font-black">
+                           <Clock size={10} className="mr-1" />
+                           {doc.createdAt?.toDate().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                         </div>
+                         <Download size={14} className="text-white/80 group-hover:scale-125 transition-transform" />
                       </div>
-                    </div>
+                    </motion.a>
                   );
                 })}
               </motion.div>

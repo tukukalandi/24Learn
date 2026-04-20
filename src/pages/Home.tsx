@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { Link, useNavigate } from 'react-router-dom';
+import { cn } from '../lib/utils';
 import { 
   ArrowRight, BookOpen, Video, PenTool, Trophy, ChevronRight, 
   Download, GraduationCap, Bell, Newspaper, Calendar, Info, 
@@ -92,6 +93,17 @@ const SERVICES = [
   { title: "Money Transfer", icon: Send, color: "text-cyan-600", bg: "bg-cyan-50" },
 ];
 
+const CARD_COLORS = [
+  { border: 'border-blue-500', icon: 'bg-blue-50 text-blue-600', text: 'text-blue-700', shadow: 'hover:shadow-blue-500/20', accent: 'bg-blue-600' },
+  { border: 'border-emerald-500', icon: 'bg-emerald-50 text-emerald-600', text: 'text-emerald-700', shadow: 'hover:shadow-emerald-500/20', accent: 'bg-emerald-600' },
+  { border: 'border-rose-500', icon: 'bg-rose-50 text-rose-600', text: 'text-rose-700', shadow: 'hover:shadow-rose-500/20', accent: 'bg-rose-600' },
+  { border: 'border-amber-500', icon: 'bg-amber-50 text-amber-600', text: 'text-amber-700', shadow: 'hover:shadow-amber-500/20', accent: 'bg-amber-600' },
+  { border: 'border-violet-500', icon: 'bg-violet-50 text-violet-600', text: 'text-violet-700', shadow: 'hover:shadow-violet-500/20', accent: 'bg-violet-600' },
+  { border: 'border-cyan-500', icon: 'bg-cyan-50 text-cyan-600', text: 'text-cyan-700', shadow: 'hover:shadow-cyan-500/20', accent: 'bg-cyan-600' },
+  { border: 'border-orange-500', icon: 'bg-orange-50 text-orange-600', text: 'text-orange-700', shadow: 'hover:shadow-orange-500/20', accent: 'bg-orange-600' },
+  { border: 'border-indigo-500', icon: 'bg-indigo-50 text-indigo-600', text: 'text-indigo-700', shadow: 'hover:shadow-indigo-500/20', accent: 'bg-indigo-600' },
+];
+
 export function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
@@ -163,26 +175,36 @@ export function Home() {
       </div>
 
       {/* Quick Links Grid */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-16 relative z-20">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {QUICK_LINKS.map((item, i) => (
-            <Link
-              key={i}
-              to={item.link}
-              className="block"
-            >
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="bg-white p-6 rounded-sm shadow-lg border-b-4 border-postal-red flex flex-col items-center text-center group transition-all h-full"
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-20 relative z-20">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {QUICK_LINKS.map((item, i) => {
+            const color = CARD_COLORS[i % CARD_COLORS.length];
+            return (
+              <Link
+                key={i}
+                to={item.link}
+                className="block group"
               >
-                <div className="w-12 h-12 bg-postal-red/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-postal-red group-hover:text-white transition-colors">
-                  <item.icon size={24} className="text-postal-red group-hover:text-white" />
-                </div>
-                <h3 className="font-bold text-slate-800 mb-1">{item.title}</h3>
-                <p className="text-[11px] text-slate-500 leading-tight">{item.desc}</p>
-              </motion.div>
-            </Link>
-          ))}
+                <motion.div
+                  whileHover={{ y: -8, scale: 1.02 }}
+                  className={cn(
+                    "bg-white p-6 rounded-3xl shadow-xl border-l-8 transition-all h-full text-center flex flex-col items-center",
+                    color.border,
+                    color.shadow
+                  )}
+                >
+                  <div className={cn(
+                    "w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-all group-hover:scale-110",
+                    color.icon
+                  )}>
+                    <item.icon size={28} />
+                  </div>
+                  <h3 className={cn("font-black text-sm uppercase tracking-tight mb-1", color.text)}>{item.title}</h3>
+                  <p className="text-[10px] text-slate-500 leading-tight font-medium opacity-70 group-hover:opacity-100 transition-opacity uppercase tracking-widest">{item.desc}</p>
+                </motion.div>
+              </Link>
+            );
+          })}
         </div>
       </div>
 
@@ -194,38 +216,52 @@ export function Home() {
             <p className="text-slate-500 max-w-2xl mx-auto">Access specialized resources and operational guidelines for various postal branches.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {BRANCHES.map((branch, i) => (
-              <motion.div
-                key={branch.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                onClick={() => {
-                  if (branch.name === 'BD Branch') {
-                    window.open('https://bd-branch-dhenkanal.vercel.app/', '_blank');
-                  } else if (branch.name === 'Mail Branch') {
-                    window.open('https://mail-branch.vercel.app/', '_blank');
-                  } else if (branch.name === 'Savings Branch') {
-                    navigate('/branch/savings');
-                  } else if (branch.name === 'Other Branch') {
-                    navigate('/branch/other');
-                  } else if (branch.name === 'Philately Branch') {
-                    window.open('https://philately.vercel.app/', '_blank');
-                  }
-                }}
-                className="group p-6 bg-slate-50 rounded-sm border border-slate-100 hover:bg-white hover:shadow-xl hover:border-postal-red/20 transition-all cursor-pointer"
-              >
-                <div className="w-12 h-12 bg-postal-red/5 rounded-sm flex items-center justify-center text-postal-red mb-4 group-hover:bg-postal-red group-hover:text-white transition-colors">
-                  <branch.icon size={24} />
-                </div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2">{branch.name}</h3>
-                <p className="text-sm text-slate-500 mb-4">{branch.desc}</p>
-                <div className="flex items-center gap-1 text-xs font-bold text-postal-red uppercase tracking-wider group-hover:gap-2 transition-all">
-                  Explore Branch <ArrowRight size={14} />
-                </div>
-              </motion.div>
-            ))}
+            {BRANCHES.map((branch, i) => {
+              const color = CARD_COLORS[(i + 4) % CARD_COLORS.length];
+              return (
+                <motion.div
+                  key={branch.name}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  whileHover={{ y: -10, scale: 1.02 }}
+                  onClick={() => {
+                    if (branch.name === 'BD Branch') {
+                      window.open('https://bd-branch-dhenkanal.vercel.app/', '_blank');
+                    } else if (branch.name === 'Mail Branch') {
+                      window.open('https://mail-branch.vercel.app/', '_blank');
+                    } else if (branch.name === 'Savings Branch') {
+                      navigate('/branch/savings');
+                    } else if (branch.name === 'Other Branch') {
+                      navigate('/branch/other');
+                    } else if (branch.name === 'Philately Branch') {
+                      window.open('https://philately.vercel.app/', '_blank');
+                    }
+                  }}
+                  className={cn(
+                    "group p-8 bg-white rounded-[2rem] border-2 shadow-lg transition-all cursor-pointer",
+                    color.border,
+                    color.shadow
+                  )}
+                >
+                  <div className={cn(
+                    "w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all group-hover:scale-110 shadow-md",
+                    color.icon
+                  )}>
+                    <branch.icon size={32} />
+                  </div>
+                  <h3 className={cn("text-2xl font-black mb-2 uppercase tracking-tight", color.text)}>{branch.name}</h3>
+                  <p className="text-sm text-slate-500 mb-6 font-medium leading-relaxed opacity-80 group-hover:opacity-100">{branch.desc}</p>
+                  <div className={cn(
+                    "flex items-center gap-2 text-xs font-black uppercase tracking-widest transition-all",
+                    color.text
+                  )}>
+                    Explore Branch <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </div>
