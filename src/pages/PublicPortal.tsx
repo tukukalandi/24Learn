@@ -178,22 +178,22 @@ export function PublicPortal() {
                       whileTap={{ scale: 0.98 }}
                       onClick={() => setSelectedSubType(subType)}
                       className={cn(
-                        "flex items-stretch overflow-hidden rounded-md shadow-md transition-all cursor-pointer h-20 group",
+                        "flex items-stretch overflow-hidden rounded-lg shadow-md transition-all cursor-pointer h-32 group",
                         color.bg,
                         color.shadow
                       )}
                     >
-                      <div className={cn("w-16 flex items-center justify-center shrink-0 border-r border-white/10", color.dark)}>
-                        <div className="bg-white/95 p-2 rounded-full shadow-inner text-slate-700">
-                          <LayoutPanelLeft size={18} />
+                      <div className={cn("w-24 flex items-center justify-center shrink-0 border-r border-white/10", color.dark)}>
+                        <div className="bg-white/95 p-4 rounded-full shadow-inner text-slate-700">
+                          <LayoutPanelLeft size={28} />
                         </div>
                       </div>
-                      <div className="flex-1 p-3 flex flex-col justify-center min-w-0">
-                        <h3 className="text-white font-black text-sm uppercase tracking-tight truncate leading-tight group-hover:underline decoration-white/30 underline-offset-2">
+                      <div className="flex-1 p-5 flex flex-col justify-center min-w-0">
+                        <h3 className="text-white font-black text-lg uppercase tracking-tight truncate leading-tight group-hover:underline decoration-white/30 underline-offset-2">
                           {subType}
                         </h3>
-                        <p className="text-white/70 text-[10px] font-bold uppercase tracking-widest mt-0.5">
-                          {groupedDocs[subType].length} Resources
+                        <p className="text-white/70 text-xs font-bold uppercase tracking-[0.15em] mt-2 opacity-90">
+                          {groupedDocs[subType].length} Items in Category
                         </p>
                       </div>
                       <div className="px-3 flex items-center text-white/40 group-hover:text-white transition-colors">
@@ -225,30 +225,30 @@ export function PublicPortal() {
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       className={cn(
-                        "flex items-stretch overflow-hidden rounded-md shadow-md transition-all cursor-pointer h-24 group relative",
+                        "flex items-stretch overflow-hidden rounded-lg shadow-md transition-all cursor-pointer h-32 group relative",
                         color.bg,
                         color.shadow
                       )}
                     >
                       {/* Left Icon Section */}
-                      <div className={cn("w-20 sm:w-24 flex items-center justify-center shrink-0 border-r border-white/10", color.dark)}>
-                        <div className="bg-white/95 p-3 rounded-full shadow-lg text-slate-700 transform group-hover:scale-110 group-hover:rotate-6 transition-transform">
-                          <FileText size={22} />
+                      <div className={cn("w-24 sm:w-28 flex items-center justify-center shrink-0 border-r border-white/10", color.dark)}>
+                        <div className="bg-white/95 p-4 rounded-full shadow-lg text-slate-700 transform group-hover:scale-110 group-hover:rotate-6 transition-transform">
+                          <FileText size={28} />
                         </div>
                       </div>
 
                       {/* Content Section */}
-                      <div className="flex-1 p-4 flex flex-col justify-center min-w-0 pr-10">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[8px] font-black uppercase tracking-[0.2em] bg-white/20 px-2 py-0.5 rounded text-white border border-white/10">
+                      <div className="flex-1 p-5 flex flex-col justify-center min-w-0 pr-12 lg:pr-16">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-[9px] font-black uppercase tracking-[0.2em] bg-white/20 px-2.5 py-1 rounded text-white border border-white/10 shadow-sm">
                             {typeInfo.label}
                           </span>
                         </div>
-                        <h3 className="text-white font-black text-sm sm:text-base uppercase tracking-tight truncate leading-tight group-hover:underline decoration-white/40 underline-offset-4">
+                        <h3 className="text-white font-black text-base sm:text-lg lg:text-xl uppercase tracking-tight truncate leading-tight group-hover:underline decoration-white/40 underline-offset-4">
                           {doc.name}
                         </h3>
                         {doc.description && (
-                          <p className="text-white/70 text-[10px] leading-tight mt-1 line-clamp-1 italic font-medium">
+                          <p className="text-white/80 text-[11px] leading-snug mt-2 line-clamp-2 italic font-medium opacity-90">
                             {doc.description}
                           </p>
                         )}
