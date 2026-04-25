@@ -120,6 +120,7 @@ export function Navbar() {
     ...(isAdmin ? [{ name: 'Internal Portal', icon: LayoutGrid, link: '/internal-portal' }] : []),
     { name: 'Staff Corner', icon: UserCircle, link: '/staff-corner' },
     { name: 'Latest Circulars', icon: FileText, link: '/circulars' },
+    { name: 'Postal Forms', icon: Download, link: 'https://postal-forms.vercel.app/', external: true },
     { name: 'Download Forms', icon: Download, link: '/forms' },
     { name: 'Holiday Calendar', icon: Calendar, link: '/holidays' },
   ];
@@ -277,17 +278,34 @@ export function Navbar() {
                   <div className="bg-slate-50 p-3 border-t border-slate-200">
                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Quick Access</h4>
                     <div className="space-y-1">
-                      {extraMenuOptions.map((option) => (
-                        <Link
-                          key={option.name}
-                          to={option.link}
-                          className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium text-slate-600 hover:text-postal-red transition-colors"
-                          onClick={() => setIsBranchMenuOpen(false)}
-                        >
-                          <option.icon size={14} />
-                          {option.name}
-                        </Link>
-                      ))}
+                      {extraMenuOptions.map((option) => {
+                        if (option.external) {
+                          return (
+                            <a
+                              key={option.name}
+                              href={option.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium text-slate-600 hover:text-postal-red transition-colors"
+                              onClick={() => setIsBranchMenuOpen(false)}
+                            >
+                              <option.icon size={14} />
+                              {option.name}
+                            </a>
+                          );
+                        }
+                        return (
+                          <Link
+                            key={option.name}
+                            to={option.link}
+                            className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium text-slate-600 hover:text-postal-red transition-colors"
+                            onClick={() => setIsBranchMenuOpen(false)}
+                          >
+                            <option.icon size={14} />
+                            {option.name}
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

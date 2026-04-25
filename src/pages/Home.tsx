@@ -79,14 +79,14 @@ const BRANCHES = [
 ];
 
 const SERVICES = [
-  { title: "Track Consignment", icon: Search, color: "text-emerald-600", bg: "bg-emerald-50" },
+  { title: "Track Consignment", icon: Search, color: "text-emerald-600", bg: "bg-emerald-50", link: "https://www.indiapost.gov.in/" },
   { title: "PMV Ticket raise", icon: AlertCircle, color: "text-red-500", bg: "bg-red-50", link: "https://pmv-toolkit.vercel.app/" },
   { title: "Locate Post Office", icon: MapPin, color: "text-postal-red", bg: "bg-red-50" },
   { title: "Banking & Savings", icon: Landmark, color: "text-amber-600", bg: "bg-amber-50" },
   { title: "PLI / RPLI", icon: ShieldCheck, color: "text-blue-600", bg: "bg-blue-50" },
   { title: "Postage Calculator", icon: Calculator, color: "text-orange-500", bg: "bg-orange-50" },
   { title: "Aadhaar Services", icon: Fingerprint, color: "text-indigo-600", bg: "bg-indigo-50" },
-  { title: "DIGIPIN", icon: Map, color: "text-rose-500", bg: "bg-rose-50" },
+  { title: "DIGIPIN", icon: Map, color: "text-rose-500", bg: "bg-rose-50", link: "https://dac.indiapost.gov.in/mydigipin/home" },
   { title: "Download Forms", icon: FileDown, color: "text-slate-600", bg: "bg-slate-50", link: "https://postal-forms.vercel.app/" },
   { title: "Ready Reckoner", icon: Book, color: "text-amber-800", bg: "bg-amber-50", link: "https://drive.google.com/file/d/1FfyMvtgGqJIKPZ0u3dEi_l6npik7t9oL/view?usp=sharing" },
   { title: "IPPB Service", icon: Smartphone, color: "text-blue-500", bg: "bg-blue-50" },
