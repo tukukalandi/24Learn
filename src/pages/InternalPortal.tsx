@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
@@ -8,7 +8,8 @@ import {
   Plus, Save, Link as LinkIcon, FileText, 
   Type, AlignLeft, LayoutPanelLeft, ChevronRight, 
   AlertCircle, CheckCircle2, Trash2, ExternalLink,
-  Clock, Tag, Search, Edit2, X
+  Clock, Tag, Search, Edit2, X, Upload, HardDrive,
+  RefreshCw, LogOut, File as FileIcon
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -44,6 +45,17 @@ export function InternalPortal() {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingDoc, setEditingDoc] = useState<PortalDoc | null>(null);
   
+  // Drive Integration States
+  const [driveStatus, setDriveStatus] = useState<{
+    configured: boolean;
+    manualConnected: boolean;
+    serviceAccountEmail: string;
+    folderId: string;
+  } | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [formData, setFormData] = useState({
     category: CATEGORIES[0],
     subType: '',
@@ -78,8 +90,80 @@ export function InternalPortal() {
       setDocuments(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as PortalDoc)));
     });
 
-    return () => unsubscribe();
+    checkDriveStatus();
+
+    // Listen for OAuth success from popup
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'OAUTH_AUTH_SUCCESS') {
+        checkDriveStatus();
+        setMessage({ type: 'success', text: 'Google Drive connected successfully!' });
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('message', handleMessage);
+    };
   }, [isAdmin]);
+
+  const checkDriveStatus = async () => {
+    try {
+      console.log('Checking Google Drive status...');
+      const res = await fetch('/api/auth/google/status', {
+        credentials: 'include'
+      });
+      const data = await res.json();
+      console.log('Drive status received:', data);
+      setDriveStatus(data);
+    } catch (err) {
+      console.error('Failed to check Drive status:', err);
+    }
+  };
+
+  const handleConnectDrive = async () => {
+    try {
+      console.log('Requesting Google Auth URL...');
+      const res = await fetch('/api/auth/google/url', {
+        credentials: 'include'
+      });
+      const data = await res.json();
+      
+      if (data.error) {
+        setMessage({ type: 'error', text: `Auth Error: ${data.error}` });
+        return;
+      }
+
+      const { url } = data;
+      console.log('Opening auth window:', url);
+      // Open in a popup for better experience
+      const width = 600;
+      const height = 700;
+      const left = window.screen.width / 2 - width / 2;
+      const top = window.screen.height / 2 - height / 2;
+      const authWindow = window.open(url, 'GoogleAuth', `width=${width},height=${height},left=${left},top=${top}`);
+      
+      if (!authWindow) {
+        setMessage({ type: 'error', text: 'Popup blocked. Please allow popups for this site.' });
+      }
+    } catch (err) {
+      console.error('Failed to get auth URL:', err);
+      setMessage({ type: 'error', text: 'Could not initiate Google Auth. Check if backend is running.' });
+    }
+  };
+
+  const handleDriveLogout = async () => {
+    try {
+      await fetch('/api/auth/google/logout', { 
+        method: 'POST',
+        credentials: 'include'
+      });
+      checkDriveStatus();
+      setMessage({ type: 'success', text: 'Disconnected from Google Drive.' });
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+  };
 
   if (!isAdmin) {
     return (
@@ -166,17 +250,54 @@ export function InternalPortal() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.subType || !formData.name || !formData.link) {
-      setMessage({ type: 'error', text: 'Please provide a document name, sub-type, and a link.' });
+    
+    if (!formData.subType || !formData.name) {
+      setMessage({ type: 'error', text: 'Please provide a document name and sub-type.' });
+      return;
+    }
+
+    if (!formData.link && !selectedFile) {
+      setMessage({ type: 'error', text: 'Please provide either a link or select a file to upload.' });
       return;
     }
 
     setLoading(true);
     setMessage(null);
+    setUploadProgress(0);
 
     try {
+      let finalLink = formData.link;
+
+      // Handle File Upload if present
+      if (selectedFile) {
+        // Validation check before attempting upload
+        if (!driveStatus?.configured && !driveStatus?.manualConnected) {
+          throw new Error('Please connect your Google Drive first using the button at the top.');
+        }
+
+        const uploadForm = new FormData();
+        uploadForm.append('file', selectedFile);
+
+        const endpoint = driveStatus?.configured ? '/api/drive/upload-service' : '/api/drive/upload-manual';
+        
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          body: uploadForm,
+          credentials: 'include'
+        });
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error || 'Drive upload failed');
+        }
+
+        finalLink = result.link;
+      }
+
       await addDoc(collection(db, 'portal_documents'), {
         ...formData,
+        link: finalLink,
         createdBy: user?.uid,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
@@ -189,6 +310,8 @@ export function InternalPortal() {
         description: '',
         link: ''
       });
+      setSelectedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (error: any) {
       console.error("Upload Error:", error);
       setMessage({ 
@@ -210,11 +333,61 @@ export function InternalPortal() {
             <ChevronRight size={12} className="text-yellow-400" />
             <span className="bg-yellow-400 text-black px-1">Repository Control</span>
           </div>
-          <h1 className="text-5xl font-black text-white uppercase tracking-tighter">Internal Portal</h1>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2">
-            <p className="font-mono text-sm uppercase tracking-widest text-yellow-400 font-bold">
-              Department of Posts // DakShiksha Administrator
-            </p>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <h1 className="text-5xl font-black text-white uppercase tracking-tighter">Internal Portal</h1>
+              <p className="font-mono text-sm uppercase tracking-widest text-yellow-400 font-bold mt-2">
+                Department of Posts // DakShiksha Administrator
+              </p>
+            </div>
+
+            {/* Drive Connection Status */}
+            <div className="bg-black/20 p-4 border-2 border-black/30 backdrop-blur-sm rounded-sm min-w-[280px]">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] uppercase tracking-widest font-bold opacity-70 flex items-center gap-2">
+                  <HardDrive size={12} /> Google Drive Status
+                </span>
+                <button onClick={checkDriveStatus} className="hover:text-yellow-400 transition-colors">
+                  <RefreshCw size={12} />
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                {driveStatus?.configured || driveStatus?.manualConnected ? (
+                  <>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
+                        <CheckCircle2 size={14} /> CONNECTED
+                      </div>
+                      <p className="text-[9px] opacity-60 truncate mt-1 italic">
+                        {driveStatus.configured ? `Service: ${driveStatus.serviceAccountEmail}` : 'Connected via OAuth'}
+                      </p>
+                    </div>
+                    {!driveStatus.configured && (
+                      <button 
+                        onClick={handleDriveLogout}
+                        className="p-2 border border-white/20 hover:bg-white/10 rounded transition-colors text-white"
+                        title="Disconnect"
+                      >
+                       <LogOut size={14} />
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <div className="w-full">
+                    <div className="flex items-center gap-2 text-xs font-bold text-yellow-400 mb-2">
+                      <AlertCircle size={14} /> DISCONNECTED
+                    </div>
+                    <button 
+                      onClick={handleConnectDrive}
+                      className="w-full bg-yellow-400 text-black py-2 px-4 text-[10px] font-black uppercase tracking-widest hover:bg-white transition-colors"
+                    >
+                      Connect Personal Drive
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -304,8 +477,64 @@ export function InternalPortal() {
                       placeholder="https://example.com/document"
                       value={formData.link}
                       onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                      className="w-full bg-[#E4E3E0] border border-[#141414] p-3 font-mono text-xs focus:outline-none focus:bg-white transition-colors"
+                      disabled={!!selectedFile}
+                      className="w-full bg-[#E4E3E0]/50 border border-[#141414] p-3 font-mono text-xs focus:outline-none focus:bg-white transition-colors disabled:opacity-50"
                     />
+                  </div>
+
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-2">
+                       <div className="h-px bg-black/10 flex-1" />
+                       <span className="text-[9px] font-black uppercase tracking-widest text-[#141414]/30">OR</span>
+                       <div className="h-px bg-black/10 flex-1" />
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono italic uppercase opacity-50 tracking-wider flex items-center gap-1">
+                        <Upload size={10} /> Option 2: Upload PDF to Google Drive
+                      </label>
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        ref={fileInputRef}
+                        onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                        disabled={!!formData.link}
+                        className="hidden"
+                        id="file-upload"
+                      />
+                      <label 
+                        htmlFor="file-upload"
+                        className={cn(
+                          "w-full border-2 border-dashed border-black/20 p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-slate-50 transition-all",
+                          selectedFile ? "bg-emerald-50 border-emerald-300" : "",
+                          formData.link ? "opacity-50 cursor-not-allowed" : ""
+                        )}
+                      >
+                        {selectedFile ? (
+                          <>
+                            <FileIcon size={24} className="text-emerald-600" />
+                            <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-tighter truncate max-w-full px-2">
+                              {selectedFile.name}
+                            </span>
+                            <span className="text-[8px] text-emerald-600">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload size={24} className="text-slate-400" />
+                            <span className="text-[10px] font-bold text-slate-500 uppercase">Click to browse PDF</span>
+                          </>
+                        )}
+                      </label>
+                      {selectedFile && (
+                        <button 
+                          type="button"
+                          onClick={() => setSelectedFile(null)}
+                          className="w-full py-1 text-[8px] uppercase tracking-widest font-black text-red-600 hover:underline"
+                        >
+                          Remove File
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

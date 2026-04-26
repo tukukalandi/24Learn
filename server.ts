@@ -20,21 +20,26 @@ const port = 3000;
 app.set('trust proxy', 1);
 app.set('strict routing', false);
 
-const isVercel = process.env.VERCEL === '1';
-const isNetlify = process.env.NETLIFY === 'true' || !!process.env.LAMBDA_TASK_ROOT;
-const isProd = process.env.NODE_ENV === 'production';
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 
-const upload = multer({ storage: multer.memoryStorage() });
-
-app.use(cors());
 app.use(express.json());
+
 app.use(cookieSession({
-  name: 'google-drive-session',
-  keys: [process.env.SESSION_SECRET || 'dakshiksha-secret-123'],
+  name: 'session',
+  keys: [process.env.SESSION_SECRET || 'dakshiksha-secret-key-v1'],
   maxAge: 24 * 60 * 60 * 1000, // 24 hours
   secure: true,
+  httpOnly: true,
   sameSite: 'none'
 }));
+
+const isProd = process.env.NODE_ENV === 'production';
+const isVercel = process.env.VERCEL === '1';
+const isNetlify = process.env.NETLIFY === 'true' || !!process.env.LAMBDA_TASK_ROOT;
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Helper to clean Folder IDs from extra junk (URLs, spaces, quotes)
 const sanitizeId = (id: string | undefined): string => {
@@ -195,7 +200,21 @@ const oauth2Client = new google.auth.OAuth2(
 );
 
 app.get('/api/auth/google/url', (req, res) => {
-  const url = oauth2Client.generateAuthUrl({
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.status(500).json({ error: 'OAuth credentials not configured. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to environment variables.' });
+  }
+
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.get('host');
+  const dynamicRedirect = `${protocol}://${host}/auth/callback`;
+  
+  const client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI || dynamicRedirect
+  );
+
+  const url = client.generateAuthUrl({
     access_type: 'offline',
     scope: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.readonly'],
     prompt: 'consent'
@@ -234,8 +253,18 @@ app.get('/api/auth/google/status', (req, res) => {
 
 app.get('/auth/callback', async (req, res) => {
   const { code } = req.query;
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.get('host');
+  const dynamicRedirect = `${protocol}://${host}/auth/callback`;
+
+  const client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI || dynamicRedirect
+  );
+
   try {
-    const { tokens } = await oauth2Client.getToken(code as string);
+    const { tokens } = await client.getToken(code as string);
     if (req.session) {
       req.session.tokens = tokens;
     }
@@ -274,12 +303,22 @@ app.post('/api/auth/google/logout', (req, res) => {
 app.post('/api/drive/upload-manual', upload.single('file'), async (req, res) => {
   try {
     if (!req.session || !req.session.tokens) {
-      return res.status(401).json({ error: 'Manual Drive not connected' });
+      return res.status(401).json({ error: 'Manual Drive not connected. Please connect your Google Drive first.' });
     }
     if (!req.file) return res.status(400).json({ error: 'No file provided' });
 
-    oauth2Client.setCredentials(req.session.tokens);
-    const drive = google.drive({ version: 'v3', auth: oauth2Client });
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.get('host');
+    const dynamicRedirect = `${protocol}://${host}/auth/callback`;
+
+    const client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_REDIRECT_URI || dynamicRedirect
+    );
+
+    client.setCredentials(req.session.tokens);
+    const drive = google.drive({ version: 'v3', auth: client });
 
     const fileMetadata = {
       name: req.file.originalname,

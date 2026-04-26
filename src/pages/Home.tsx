@@ -1,7 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect } from 'react';
-import { db, handleFirestoreError, OperationType } from '../firebase';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { 
@@ -175,7 +173,7 @@ export function Home() {
       </div>
 
       {/* Quick Links Grid */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-20 relative z-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-20 relative z-20 mb-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {QUICK_LINKS.map((item, i) => {
             const color = CARD_COLORS[i % CARD_COLORS.length];
@@ -207,6 +205,7 @@ export function Home() {
           })}
         </div>
       </div>
+
 
       {/* Branch Portal Section */}
       <div className="bg-white border-y border-slate-200 py-16">
