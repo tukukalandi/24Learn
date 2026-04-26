@@ -4,7 +4,7 @@ import {
   Smartphone, Calculator, Info, FileText, Download, 
   Gavel, Users, Bell, Image, HelpCircle, Calendar, 
   UserCog, MapPin, Map, BookOpen, ExternalLink,
-  Briefcase, AlertCircle, Globe, Github
+  Briefcase, AlertCircle, Globe, Github, GraduationCap
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -15,13 +15,24 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Column 1: DakShiksha Branding */}
           <div className="space-y-6">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-postal-red rounded-xl flex items-center justify-center shadow-lg shadow-postal-red/20">
-                <Globe size={28} className="text-white" />
+            <Link to="/" className="flex items-center gap-4 group">
+              <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-all">
+                <div className="relative">
+                  <Mail size={32} className="text-postal-red" />
+                  <GraduationCap 
+                    size={20} 
+                    className="absolute -top-1 -right-1 text-postal-yellow stroke-postal-red stroke-2" 
+                  />
+                </div>
               </div>
-              <span className="text-2xl font-bold tracking-tight text-white">
-                Dak<span className="text-postal-red">Shiksha</span>
-              </span>
+              <div className="flex flex-col">
+                <span className="text-2xl font-black tracking-tight text-white group-hover:text-[#facc15] transition-colors">
+                  डाकशिक्षा
+                </span>
+                <span className="text-lg font-bold text-[#facc15] -mt-1 leading-none">
+                  DakShiksha
+                </span>
+              </div>
             </Link>
             
             <p className="text-sm opacity-80 leading-relaxed max-w-xs">

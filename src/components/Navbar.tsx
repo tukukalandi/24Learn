@@ -313,10 +313,22 @@ export function Navbar() {
             </div>
 
             <Link to="/" className="flex items-center gap-4 group">
-              <div className="text-center md:text-left">
-                <h1 className="text-xl md:text-2xl font-bold leading-tight tracking-wide text-white">डाकशिक्षा</h1>
-                <h2 className="text-lg md:text-xl font-semibold leading-tight text-white">DakShiksha</h2>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-white/80 mt-1">Postal Educational Knowledge Portal</p>
+              <div className="flex items-center justify-center w-14 h-14 bg-white rounded-lg shadow-md border border-postal-red/10 overflow-hidden group-hover:scale-105 transition-transform">
+                <div className="relative">
+                  <Mail size={32} className="text-postal-red" />
+                  <GraduationCap 
+                    size={20} 
+                    className="absolute -top-1 -right-1 text-postal-yellow stroke-postal-red stroke-2" 
+                  />
+                </div>
+              </div>
+              <div className="text-left">
+                <h1 className="text-xl md:text-2xl font-black leading-tight tracking-tight text-white group-hover:text-postal-yellow transition-colors">
+                  डाकशिक्षा <span className="text-postal-yellow ml-1">DakShiksha</span>
+                </h1>
+                <p className="text-[9px] uppercase tracking-[0.25em] text-white/70 font-bold mt-0.5">
+                  Postal Educational Knowledge Portal
+                </p>
               </div>
             </Link>
           </div>
