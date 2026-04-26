@@ -104,11 +104,11 @@ export function Footer() {
                   { name: "Corporate Complaints", icon: Users },
                   { name: "FAQs", icon: HelpCircle },
                   { name: "Contact Us", icon: Phone },
-                  { name: "Holiday List", icon: Calendar },
+                  { name: "Holiday List", icon: Calendar, link: 'https://drive.google.com/file/d/1OTZ0aGL93WI7hGR5sfZAkM_xSwoFxSzn/view?usp=drive_link' },
                   { name: "Admin Panel", icon: UserCog },
                 ].map((item) => (
                   <li key={item.name}>
-                    <a href="#" className="flex items-center gap-3 text-sm opacity-80 hover:opacity-100 hover:text-[#facc15] transition-all group">
+                    <a href={item.link || "#"} target={item.link ? "_blank" : undefined} rel={item.link ? "noopener noreferrer" : undefined} className="flex items-center gap-3 text-sm opacity-80 hover:opacity-100 hover:text-[#facc15] transition-all group">
                       <item.icon size={16} className="text-[#facc15] group-hover:scale-110 transition-transform" />
                       {item.name}
                     </a>
